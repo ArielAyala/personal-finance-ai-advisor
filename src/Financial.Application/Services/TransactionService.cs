@@ -1,5 +1,6 @@
 using Financial.Application.DTOs;
 using Financial.Application.Interfaces;
+using Financial.Application.Mappers;
 using Financial.Domain.Entities;
 
 namespace Financial.Application.Services;
@@ -26,13 +27,13 @@ public class TransactionService
         CancellationToken cancellationToken = default)
     {
         var transactions = await _transactionRepository.GetByUserIdAsync(userId, filter, cancellationToken);
-        return transactions.Select(MapToDto);
+        return transactions.Select(TransactionMapper.ToDto);
     }
 
     public async Task<TransactionDto?> GetTransactionByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var transaction = await _transactionRepository.GetByIdAsync(id, cancellationToken);
-        return transaction != null ? MapToDto(transaction) : null;
+        return transaction != null ? TransactionMapper.ToDto(transaction) : null;
     }
 
     public async Task<TransactionDto> CreateTransactionAsync(
@@ -76,7 +77,7 @@ public class TransactionService
         
         // Reload with navigation properties
         var loaded = await _transactionRepository.GetByIdAsync(created.Id, cancellationToken);
-        return MapToDto(loaded!);
+        return TransactionMapper.ToDto(loaded!);
     }
 
     public async Task<TransactionDto> UpdateTransactionAsync(
@@ -98,31 +99,11 @@ public class TransactionService
         
         // Reload with navigation properties
         var loaded = await _transactionRepository.GetByIdAsync(transaction.Id, cancellationToken);
-        return MapToDto(loaded!);
+        return TransactionMapper.ToDto(loaded!);
     }
 
     public async Task DeleteTransactionAsync(Guid id, CancellationToken cancellationToken = default)
     {
         await _transactionRepository.DeleteAsync(id, cancellationToken);
-    }
-
-    private static TransactionDto MapToDto(Transaction transaction)
-    {
-        return new TransactionDto(
-            transaction.Id,
-            transaction.AccountId,
-            transaction.Account?.Name ?? "",
-            transaction.CategoryId,
-            transaction.Category?.Name,
-            transaction.Date,
-            transaction.Amount,
-            transaction.Currency,
-            transaction.Merchant,
-            transaction.Description,
-            transaction.Notes,
-            transaction.Type.ToString(),
-            transaction.Reference,
-            transaction.CreatedAt
-        );
     }
 }

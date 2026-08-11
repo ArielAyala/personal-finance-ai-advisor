@@ -1,5 +1,6 @@
 using Financial.Application.DTOs;
 using Financial.Application.Interfaces;
+using Financial.Application.Mappers;
 using Financial.Domain.Entities;
 
 namespace Financial.Application.Services;
@@ -16,13 +17,13 @@ public class AccountService
     public async Task<IEnumerable<AccountDto>> GetUserAccountsAsync(Guid userId, CancellationToken cancellationToken = default)
     {
         var accounts = await _accountRepository.GetByUserIdAsync(userId, cancellationToken);
-        return accounts.Select(MapToDto);
+        return accounts.Select(AccountMapper.ToDto);
     }
 
     public async Task<AccountDto?> GetAccountByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var account = await _accountRepository.GetByIdAsync(id, cancellationToken);
-        return account != null ? MapToDto(account) : null;
+        return account != null ? AccountMapper.ToDto(account) : null;
     }
 
     public async Task<AccountDto> CreateAccountAsync(Guid userId, CreateAccountDto dto, CancellationToken cancellationToken = default)
@@ -41,7 +42,7 @@ public class AccountService
         };
 
         var created = await _accountRepository.CreateAsync(account, cancellationToken);
-        return MapToDto(created);
+        return AccountMapper.ToDto(created);
     }
 
     public async Task<AccountDto> UpdateAccountAsync(Guid id, UpdateAccountDto dto, CancellationToken cancellationToken = default)
@@ -56,26 +57,11 @@ public class AccountService
         if (dto.IsActive.HasValue) account.IsActive = dto.IsActive.Value;
 
         await _accountRepository.UpdateAsync(account, cancellationToken);
-        return MapToDto(account);
+        return AccountMapper.ToDto(account);
     }
 
     public async Task DeleteAccountAsync(Guid id, CancellationToken cancellationToken = default)
     {
         await _accountRepository.DeleteAsync(id, cancellationToken);
-    }
-
-    private static AccountDto MapToDto(Account account)
-    {
-        return new AccountDto(
-            account.Id,
-            account.Name,
-            account.Type.ToString(),
-            account.Currency,
-            account.AccountNumber,
-            account.Institution,
-            account.CurrentBalance,
-            account.IsActive,
-            account.CreatedAt
-        );
     }
 }

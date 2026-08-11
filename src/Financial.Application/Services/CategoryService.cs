@@ -1,5 +1,6 @@
 using Financial.Application.DTOs;
 using Financial.Application.Interfaces;
+using Financial.Application.Mappers;
 using Financial.Domain.Entities;
 
 namespace Financial.Application.Services;
@@ -16,13 +17,13 @@ public class CategoryService
     public async Task<IEnumerable<CategoryDto>> GetUserCategoriesAsync(Guid userId, CancellationToken cancellationToken = default)
     {
         var categories = await _categoryRepository.GetByUserIdAsync(userId, cancellationToken);
-        return categories.Select(MapToDto);
+        return categories.Select(CategoryMapper.ToDto);
     }
 
     public async Task<CategoryDto?> GetCategoryByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var category = await _categoryRepository.GetByIdAsync(id, cancellationToken);
-        return category != null ? MapToDto(category) : null;
+        return category != null ? CategoryMapper.ToDto(category) : null;
     }
 
     public async Task<CategoryDto> CreateCategoryAsync(Guid userId, CreateCategoryDto dto, CancellationToken cancellationToken = default)
@@ -39,7 +40,7 @@ public class CategoryService
         };
 
         var created = await _categoryRepository.CreateAsync(category, cancellationToken);
-        return MapToDto(created);
+        return CategoryMapper.ToDto(created);
     }
 
     public async Task<CategoryDto> UpdateCategoryAsync(Guid id, UpdateCategoryDto dto, CancellationToken cancellationToken = default)
@@ -53,24 +54,11 @@ public class CategoryService
         if (dto.Icon != null) category.Icon = dto.Icon;
 
         await _categoryRepository.UpdateAsync(category, cancellationToken);
-        return MapToDto(category);
+        return CategoryMapper.ToDto(category);
     }
 
     public async Task DeleteCategoryAsync(Guid id, CancellationToken cancellationToken = default)
     {
         await _categoryRepository.DeleteAsync(id, cancellationToken);
-    }
-
-    private static CategoryDto MapToDto(Category category)
-    {
-        return new CategoryDto(
-            category.Id,
-            category.Name,
-            category.Description,
-            category.Type.ToString(),
-            category.Color,
-            category.Icon,
-            category.CreatedAt
-        );
     }
 }

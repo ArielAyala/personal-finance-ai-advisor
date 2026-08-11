@@ -13,7 +13,9 @@ builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
     {
-        policy.WithOrigins("http://localhost:3000")
+        policy.WithOrigins(
+                "http://localhost:3000",   // Next.js dev server
+                "https://localhost:3000")  // Next.js dev server (HTTPS)
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials();
@@ -34,8 +36,14 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
+// CORS must be configured before any redirects
 app.UseCors();
-app.UseHttpsRedirection();
+
+// Disable HTTPS redirection in development to avoid CORS issues with redirects
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
 
 // Map API endpoints
 app.MapAccountEndpoints();

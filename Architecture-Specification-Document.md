@@ -319,6 +319,37 @@ AnalyzeMonthlyExpensesQuery
 AskFinancialAdvisorQuery
 ```
 
+### Entity-DTO Mapping Strategy
+
+Para el mapeo entre entidades del dominio y DTOs se utiliza **Mapperly** (source generator):
+
+**Entity → DTO (lectura):**
+- Mapperly genera código en tiempo de compilación
+- Mappers estáticos en `Financial.Application/Mappers/`
+- Sin overhead de runtime (cero reflexión)
+- Validación de errores en compilación
+
+**DTO → Entity (escritura):**
+- Mapeo **manual** en servicios
+- Preserva validación de negocio
+- Control explícito de ownership checks
+- Lógica de defaults y transformaciones visibles
+
+Ejemplo de uso:
+```csharp
+// Lectura: Entity → DTO (Mapperly)
+return accounts.Select(AccountMapper.ToDto);
+
+// Escritura: DTO → Entity (Manual)
+var account = new Account
+{
+    UserId = userId,
+    Name = dto.Name,
+    Type = Enum.Parse<AccountType>(dto.Type),
+    // ... reglas de negocio explícitas
+};
+```
+
 ---
 
 ## Domain Layer
