@@ -1,0 +1,9 @@
+Date,Amount,Currency,Merchant,Category,Account,Notes
+2026-07-01,-62000,PYG,Github Copilot,Professional Service,Mastercard Credit Card Ueno,
+2026-07-05,-150000,PYG,Supermercado Stock,Groceries,Ueno Bank,
+2026-07-10,5000000,PYG,Salary,Income,Ueno Bank,Monthly salary
+2026-07-15,-250000,PYG,Internet Provider,Utilities,Ueno Bank,
+2026-07-20,-80000,PYG,Restaurant La Cabrera,Dining,Mastercard Credit Card Ueno,
+2026-07-25,-45000,PYG,Gas Station,Transportation,Cash,
+2026-08-01,-62000,PYG,Github Copilot,Professional Service,Mastercard Credit Card Ueno,August subscription
+2026-08-05,500,USD,Freelance Project,Income,USD Account,Client payment

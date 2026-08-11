@@ -100,6 +100,7 @@ See:
   - `/api/transactions`
 - ✅ Repository pattern
 - ✅ Dependency Injection
+- ✅ Entity→DTO mapping with Mapperly
 
 **Frontend:**
 - ✅ Next.js 16 + TypeScript
@@ -115,13 +116,40 @@ See:
 - ✅ Multi-currency support (PYG, USD)
 - ✅ CORS configured
 
+## Phase 2 Status: ✅ COMPLETED
+
+### What's Implemented:
+
+**Backend - Import System:**
+- ✅ File upload endpoints (`/api/import`)
+- ✅ CSV parser (CsvHelper)
+- ✅ Excel parser (EPPlus - .xlsx, .xls)
+- ✅ Import preview with validation
+- ✅ Duplicate detection service
+- ✅ ImportBatch entity for tracking imports
+- ✅ File validation (size, format)
+- ✅ Error handling and reporting
+
+**Import Endpoints:**
+- `POST /api/import/preview` - Upload file and preview transactions
+- `POST /api/import/execute` - Execute import after preview
+- `POST /api/import/validate` - Validate file format
+
+**Expected File Format:**
+```csv
+Date,Amount,Currency,Merchant,Category,Account,Notes
+2026-07-01,-62000,PYG,Github Copilot,Professional Service,Mastercard,Monthly subscription
+```
+
+**Sample File:**
+- `sample-transactions.csv` - Example file with test data
+
 ### Next Steps:
 
-**Phase 2: Import System**
-- Excel/CSV file upload
-- Transaction parser
-- Duplicate detection
-- Preview before import
+**Phase 3: Financial Closing Module**
+- Monthly snapshots (Draft/Closed)
+- Net worth calculations
+- Historical tracking
 
 **Phase 3: Financial Closing Module**
 - Monthly snapshots (Draft/Closed)
@@ -135,6 +163,24 @@ See:
 
 **Phase 5-8:** Analytics, AI Assistant, RAG, Advanced Agent
 
+## Testing Import API
+
+### Using curl:
+
+```bash
+# Preview import
+curl -X POST http://localhost:5213/api/import/preview \
+  -F "file=@sample-transactions.csv"
+
+# Validate file
+curl -X POST http://localhost:5213/api/import/validate \
+  -F "file=@sample-transactions.csv"
+```
+
+### Using HTTP file:
+
+See `src/Financial.Api/Financial.Api.http` for example requests.
+
 ## Git Commit History
 
 ```bash
@@ -147,8 +193,8 @@ git log --oneline
 ## For Next Development Session
 
 When continuing in a new chat/session, mention:
-> "Continue with Phase 2 of Personal Finance AI Advisor.  
-> Phase 1 is complete (see git log).  
+> "Continue with Phase 3 of Personal Finance AI Advisor.  
+> Phases 1-2 are complete (see git log).  
 > Refer to init-spec-driven-development.md and Architecture-Specification-Document.md for context."
 
 The entire project structure is committed and ready for the next phase.

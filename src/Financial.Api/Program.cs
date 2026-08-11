@@ -49,5 +49,6 @@ if (!app.Environment.IsDevelopment())
 app.MapAccountEndpoints();
 app.MapCategoryEndpoints();
 app.MapTransactionEndpoints();
+app.MapImportEndpoints();
 
 app.Run();

@@ -1,6 +1,111 @@
 @Financial.Api_HostAddress = http://localhost:5213
 
-GET {{Financial.Api_HostAddress}}/weatherforecast/
+### Get all accounts
+GET {{Financial.Api_HostAddress}}/api/accounts
 Accept: application/json
+
+###
+
+### Get all categories
+GET {{Financial.Api_HostAddress}}/api/categories
+Accept: application/json
+
+###
+
+### Get all transactions
+GET {{Financial.Api_HostAddress}}/api/transactions
+Accept: application/json
+
+###
+
+### Create account
+POST {{Financial.Api_HostAddress}}/api/accounts
+Content-Type: application/json
+
+{
+  "name": "Ueno Bank",
+  "type": "BankAccount",
+  "currency": "PYG",
+  "accountNumber": "xxxx2039432",
+  "institution": "Ueno Bank",
+  "currentBalance": 1000000,
+  "isActive": true
+}
+
+###
+
+### Create category
+POST {{Financial.Api_HostAddress}}/api/categories
+Content-Type: application/json
+
+{
+  "name": "Professional Service",
+  "description": "Software and professional services",
+  "type": "Expense",
+  "color": "#4CAF50",
+  "icon": "code"
+}
+
+###
+
+### Create transaction
+POST {{Financial.Api_HostAddress}}/api/transactions
+Content-Type: application/json
+
+{
+  "accountId": "00000000-0000-0000-0000-000000000001",
+  "categoryId": "00000000-0000-0000-0000-000000000001",
+  "date": "2026-08-11",
+  "amount": -62000,
+  "currency": "PYG",
+  "merchant": "Github Copilot",
+  "description": "Monthly subscription",
+  "type": "Expense"
+}
+
+###
+
+### Preview import - NOTE: This requires multipart/form-data
+### Use Postman, Insomnia, or curl for file uploads
+### Example curl command:
+### curl -X POST http://localhost:5213/api/import/preview -F "file=@sample-transactions.csv"
+
+POST {{Financial.Api_HostAddress}}/api/import/preview
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="sample-transactions.csv"
+Content-Type: text/csv
+
+Date,Amount,Currency,Merchant,Category,Account,Notes
+2026-07-01,-62000,PYG,Github Copilot,Professional Service,Mastercard Credit Card Ueno,
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+###
+
+### Execute import
+POST {{Financial.Api_HostAddress}}/api/import/execute
+Content-Type: application/json
+
+{
+  "batchId": "00000000-0000-0000-0000-000000000001",
+  "skipDuplicates": true,
+  "autoCreateCategories": true,
+  "autoCreateAccounts": false
+}
+
+###
+
+### Validate import file
+POST {{Financial.Api_HostAddress}}/api/import/validate
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="sample-transactions.csv"
+Content-Type: text/csv
+
+Date,Amount,Currency,Merchant,Category,Account,Notes
+2026-07-01,-62000,PYG,Github Copilot,Professional Service,Mastercard Credit Card Ueno,
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
 
 ###
