@@ -25,10 +25,11 @@ Solution: `PersonalFinanceAIAdvisor.sln` (backend projects only). Frontend is se
 
 - .NET **9** (`net9.0`)
 - Clean Architecture layers as above
-- Packages today: OpenAPI on Api; EF Core Design + **Npgsql.EntityFrameworkCore.PostgreSQL** on Infrastructure
-- Api still has default weatherforecast sample; Domain/Application/Infrastructure are `Class1` stubs
-- No tests, CI, Docker, or README yet
-- No connection string / DbContext wired yet
+- Packages today: OpenAPI on Api; EF Core Design + **Npgsql.EntityFrameworkCore.PostgreSQL** on Infrastructure; **Riok.Mapperly 4.3.1** on Application
+- Implemented: Account, Transaction, Category CRUD with endpoints, services, repositories, EF configurations
+- Entity→DTO mapping: **Mapperly** (source generator) with mappers in `Financial.Application/Mappers/`
+- DTO→entity (Create/Update): **manual** in service layer (preserves business logic, validation, ownership checks)
+- No tests, CI, Docker yet
 
 ### Dependency rules (enforce)
 
