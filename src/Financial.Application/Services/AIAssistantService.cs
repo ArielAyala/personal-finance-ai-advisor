@@ -26,6 +26,7 @@ public class AIAssistantService : IAIAssistantService
         IAnalyticsService analyticsService,
         IFinancialSnapshotRepository snapshotRepository,
         IBillRepository billRepository,
+        IRagService ragService,
         ILogger<AIAssistantService> logger)
     {
         _logger = logger;
@@ -49,6 +50,10 @@ public class AIAssistantService : IAIAssistantService
         );
         kernelBuilder.Plugins.AddFromObject(financialPlugin, "FinancialData");
 
+        // Register RAG plugin for document search
+        var ragPlugin = new RagPlugin(ragService);
+        kernelBuilder.Plugins.AddFromObject(ragPlugin, "DocumentSearch");
+
         _kernel = kernelBuilder.Build();
         _chatService = _kernel.GetRequiredService<IChatCompletionService>();
     }
@@ -71,8 +76,9 @@ public class AIAssistantService : IAIAssistantService
 4. Track net worth evolution
 5. Monitor bills and upcoming obligations
 6. Answer questions about their financial data
+7. Search and retrieve information from their uploaded documents
 
-You have access to financial data tools. Use them to provide accurate, data-driven answers.
+You have access to financial data tools AND document search tools. Use them to provide accurate, data-driven answers.
 
 When responding:
 - Be concise and clear
@@ -81,13 +87,15 @@ When responding:
 - Format currency amounts appropriately (PYG or USD)
 - Be supportive and constructive
 - If you need to use a tool, explain what you're checking
+- If the user asks about documents, contracts, or specific information that might be in files, use the document search tools
 
 The user's financial data includes:
 - Transactions (income and expenses)
 - Accounts (bank accounts, credit cards, investments)
 - Bills and obligations
 - Financial snapshots (net worth over time)
-- Categories for organizing expenses");
+- Categories for organizing expenses
+- Uploaded documents (bank statements, invoices, receipts, contracts, reports)");
 
             // Add conversation history if provided
             if (request.History != null)

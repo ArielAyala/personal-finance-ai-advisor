@@ -74,5 +74,6 @@ app.MapFinancialSnapshotEndpoints();
 app.MapExchangeRateEndpoints();
 app.MapAnalyticsEndpoints();
 app.MapAIAssistantEndpoints();
+app.MapDocumentEndpoints();
 
 app.Run();

@@ -31,6 +31,8 @@ public static class DependencyInjection
         services.AddScoped<IFinancialSnapshotRepository, FinancialSnapshotRepository>();
         services.AddScoped<ISnapshotAccountRepository, SnapshotAccountRepository>();
         services.AddScoped<IExchangeRateRepository, ExchangeRateRepository>();
+        services.AddScoped<IDocumentRepository, DocumentRepository>();
+        services.AddScoped<IDocumentEmbeddingRepository, DocumentEmbeddingRepository>();
 
         return services;
     }

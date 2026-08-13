@@ -655,3 +655,132 @@ Content-Type: application/json
 }
 
 ###
+
+# ================================================
+# PHASE 7: RAG - Document Management & Search
+# ================================================
+
+### Get all documents
+GET {{Financial.Api_HostAddress}}/api/documents
+Accept: application/json
+
+###
+
+### Upload a text document
+POST {{Financial.Api_HostAddress}}/api/documents/upload
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="title"
+
+Financial Strategy 2026
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="description"
+
+My personal financial strategy and goals for 2026
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="type"
+
+Report
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="strategy.txt"
+Content-Type: text/plain
+
+This is my financial strategy for 2026:
+
+1. Save 30% of monthly income
+2. Reduce dining out expenses by 20%
+3. Invest in index funds monthly
+4. Build emergency fund of 6 months expenses
+5. Pay off credit card debt completely
+6. Review and optimize subscriptions quarterly
+
+Target net worth growth: 25% by end of year
+Focus on passive income generation
+Automate savings and investments
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+###
+
+### Get document by ID (replace {documentId} with actual ID)
+GET {{Financial.Api_HostAddress}}/api/documents/{documentId}
+Accept: application/json
+
+###
+
+### Update document
+PUT {{Financial.Api_HostAddress}}/api/documents/{documentId}
+Content-Type: application/json
+
+{
+  "title": "Updated Financial Strategy 2026",
+  "description": "Updated strategy with Q2 adjustments"
+}
+
+###
+
+### Search documents by content
+POST {{Financial.Api_HostAddress}}/api/documents/search
+Content-Type: application/json
+
+{
+  "query": "savings and investment strategy",
+  "limit": 5
+}
+
+###
+
+### Force reprocess a document (if needed)
+POST {{Financial.Api_HostAddress}}/api/documents/{documentId}/process
+Content-Type: application/json
+
+###
+
+### Delete document
+DELETE {{Financial.Api_HostAddress}}/api/documents/{documentId}
+
+###
+
+# ================================================
+# AI Assistant with RAG - Document-Aware Chat
+# ================================================
+
+### Ask AI about uploaded documents
+POST {{Financial.Api_HostAddress}}/api/ai/chat
+Content-Type: application/json
+
+{
+  "message": "What are my financial goals according to my uploaded documents?"
+}
+
+###
+
+### Ask AI to search documents
+POST {{Financial.Api_HostAddress}}/api/ai/chat
+Content-Type: application/json
+
+{
+  "message": "Search my documents for information about savings targets"
+}
+
+###
+
+### Combined financial data + document query
+POST {{Financial.Api_HostAddress}}/api/ai/chat
+Content-Type: application/json
+
+{
+  "message": "Am I on track with my savings goals based on my actual transactions and my documented strategy?"
+}
+
+###
+
+### Ask for specific document insights
+POST {{Financial.Api_HostAddress}}/api/ai/chat
+Content-Type: application/json
+
+{
+  "message": "What investment advice is in my documents?"
+}
+
+###

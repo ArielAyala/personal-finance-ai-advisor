@@ -27,6 +27,13 @@ public static class DependencyInjection
         services.AddScoped<IFileParserService, CsvParserService>();
         services.AddScoped<IFileParserService, ExcelParserService>();
 
+        // Register RAG and document services
+        services.AddScoped<IDocumentService, DocumentService>();
+        services.AddScoped<IEmbeddingService, EmbeddingService>();
+        services.AddScoped<ITextExtractionService, TextExtractionService>();
+        services.AddScoped<IRagService, RagService>();
+        services.AddScoped<IFileStorageService, FileStorageService>();
+
         return services;
     }
 }

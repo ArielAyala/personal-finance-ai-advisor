@@ -20,6 +20,7 @@ public class Document
 
     // Navigation properties
     public User User { get; set; } = null!;
+    public ICollection<DocumentEmbedding> Embeddings { get; set; } = new List<DocumentEmbedding>();
 }
 
 public enum DocumentType

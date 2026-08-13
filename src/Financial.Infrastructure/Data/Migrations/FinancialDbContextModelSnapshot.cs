@@ -288,6 +288,9 @@ namespace Financial.Infrastructure.Data.Migrations
                     b.Property<Guid>("DocumentId")
                         .HasColumnType("uuid");
 
+                    b.Property<Guid?>("DocumentId1")
+                        .HasColumnType("uuid");
+
                     b.Property<Vector>("Embedding")
                         .HasColumnType("vector(1536)")
                         .HasColumnName("embedding");
@@ -295,6 +298,8 @@ namespace Financial.Infrastructure.Data.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("DocumentId");
+
+                    b.HasIndex("DocumentId1");
 
                     b.ToTable("document_embeddings", (string)null);
                 });
@@ -695,6 +700,10 @@ namespace Financial.Infrastructure.Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Financial.Domain.Entities.Document", null)
+                        .WithMany("Embeddings")
+                        .HasForeignKey("DocumentId1");
+
                     b.Navigation("Document");
                 });
 
@@ -777,6 +786,11 @@ namespace Financial.Infrastructure.Data.Migrations
                     b.Navigation("Bills");
 
                     b.Navigation("Transactions");
+                });
+
+            modelBuilder.Entity("Financial.Domain.Entities.Document", b =>
+                {
+                    b.Navigation("Embeddings");
                 });
 
             modelBuilder.Entity("Financial.Domain.Entities.FinancialSnapshot", b =>

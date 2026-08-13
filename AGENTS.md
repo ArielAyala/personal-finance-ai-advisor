@@ -25,8 +25,21 @@ Solution: `PersonalFinanceAIAdvisor.sln` (backend projects only). Frontend is se
 
 - .NET **9** (`net9.0`)
 - Clean Architecture layers as above
-- Packages today: OpenAPI on Api; EF Core Design + **Npgsql.EntityFrameworkCore.PostgreSQL** on Infrastructure; **Riok.Mapperly 4.3.1** on Application
-- Implemented: Account, Transaction, Category CRUD with endpoints, services, repositories, EF configurations
+- Packages today: 
+  - **OpenAPI** + **Swagger** on Api
+  - **EF Core Design** + **Npgsql.EntityFrameworkCore.PostgreSQL 9.0.4** + **Pgvector.EntityFrameworkCore 0.3.0** on Infrastructure
+  - **Riok.Mapperly 4.3.1** on Application
+  - **Microsoft.SemanticKernel 1.79.0** on Application (AI integration)
+  - **iText7 9.0.0** on Application (PDF text extraction)
+  - **EPPlus 7.5.2** on Application (Excel parsing & text extraction)
+- Implemented modules:
+  - **Phase 1**: Account, Transaction, Category CRUD with endpoints, services, repositories, EF configurations
+  - **Phase 2**: Import System (CSV/Excel upload, parsing, duplicate detection)
+  - **Phase 3**: Financial Closing Module (FinancialSnapshot, SnapshotAccount, net worth tracking)
+  - **Phase 4**: Bills Module (recurring obligations, installments, payment tracking)
+  - **Phase 5**: Analytics Module (monthly summaries, trends, savings rate, debt analysis)
+  - **Phase 6**: AI Assistant v1 (Semantic Kernel + OpenAI integration with 9 financial data tools)
+  - **Phase 7**: RAG Integration (Document upload/processing, pgvector semantic search, AI document-aware chat)
 - Entity→DTO mapping: **Mapperly** (source generator) with mappers in `Financial.Application/Mappers/`
 - DTO→entity (Create/Update): **manual** in service layer (preserves business logic, validation, ownership checks)
 - No tests, CI, Docker yet
@@ -94,10 +107,12 @@ If only npm is available after a proper `package.json` exists: `npm install` / `
 
 - **Data first**: PostgreSQL is source of truth. AI reasons over tools/SQL; it must not own financial state.
 - **Multi-currency from day one**: store original currency on accounts/transactions/obligations/snapshots. Primary currencies **PYG** and **USD**. Base reporting currency default **PYG** via historical `ExchangeRate` (user-entered).
-- Planned domain cores: Account, Transaction, Category, Bill, FinancialSnapshot (+ SnapshotAccount), Goal, Document, ExchangeRate.
+- **Domain entities**: Account, Transaction, Category, Bill, FinancialSnapshot (+ SnapshotAccount), ExchangeRate, Document, DocumentEmbedding, Goal (planned).
 - Snapshot lifecycle: **Draft** (editable) → **Closed** (historical).
-- Planned later (not in code): FluentValidation, JWT, pgvector (RAG), file import (Excel/PDF), AI agent tools, React Query / charts on frontend.
-- Evolution: monolith CRUD → AI tools → RAG/pgvector → advanced agent. Build stage-appropriate; don’t invent full agent infra before the data model exists.
+- **RAG (Phase 7 ✅)**: Document ingestion pipeline (upload → text extraction → chunking → OpenAI embeddings → pgvector storage), HNSW index for fast similarity search, RAG plugin for AI agent.
+- **AI Architecture**: Semantic Kernel orchestrates tools (FinancialDataPlugin with 9 functions, RagPlugin with 2 functions). AI assistant can query financial data AND search uploaded documents.
+- Planned later (not in code): FluentValidation, JWT auth, Goals module, advanced agents, React Query / charts on frontend.
+- Evolution: monolith CRUD → AI tools → RAG/pgvector (✅ complete) → advanced agent. Build stage-appropriate.
 
 ## Conventions
 
