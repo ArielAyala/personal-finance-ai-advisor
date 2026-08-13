@@ -40,6 +40,7 @@ Solution: `PersonalFinanceAIAdvisor.sln` (backend projects only). Frontend is se
   - **Phase 5**: Analytics Module (monthly summaries, trends, savings rate, debt analysis)
   - **Phase 6**: AI Assistant v1 (Semantic Kernel + OpenAI integration with 9 financial data tools)
   - **Phase 7**: RAG Integration (Document upload/processing, pgvector semantic search, AI document-aware chat)
+  - **Phase 8**: AI Agent Advanced (Goals module, financial planning tools, recommendations engine, multi-step reasoning)
 - Entity→DTO mapping: **Mapperly** (source generator) with mappers in `Financial.Application/Mappers/`
 - DTO→entity (Create/Update): **manual** in service layer (preserves business logic, validation, ownership checks)
 - No tests, CI, Docker yet
@@ -107,12 +108,17 @@ If only npm is available after a proper `package.json` exists: `npm install` / `
 
 - **Data first**: PostgreSQL is source of truth. AI reasons over tools/SQL; it must not own financial state.
 - **Multi-currency from day one**: store original currency on accounts/transactions/obligations/snapshots. Primary currencies **PYG** and **USD**. Base reporting currency default **PYG** via historical `ExchangeRate` (user-entered).
-- **Domain entities**: Account, Transaction, Category, Bill, FinancialSnapshot (+ SnapshotAccount), ExchangeRate, Document, DocumentEmbedding, Goal (planned).
+- **Domain entities**: Account, Transaction, Category, Bill, FinancialSnapshot (+ SnapshotAccount), ExchangeRate, Document, DocumentEmbedding, Goal.
 - Snapshot lifecycle: **Draft** (editable) → **Closed** (historical).
 - **RAG (Phase 7 ✅)**: Document ingestion pipeline (upload → text extraction → chunking → OpenAI embeddings → pgvector storage), HNSW index for fast similarity search, RAG plugin for AI agent.
-- **AI Architecture**: Semantic Kernel orchestrates tools (FinancialDataPlugin with 9 functions, RagPlugin with 2 functions). AI assistant can query financial data AND search uploaded documents.
-- Planned later (not in code): FluentValidation, JWT auth, Goals module, advanced agents, React Query / charts on frontend.
-- Evolution: monolith CRUD → AI tools → RAG/pgvector (✅ complete) → advanced agent. Build stage-appropriate.
+- **AI Architecture (Phase 8 ✅)**: Semantic Kernel orchestrates 4 plugin groups:
+  1. **FinancialDataPlugin** (9 functions): transactions, accounts, bills, snapshots, analytics, debt analysis
+  2. **RagPlugin** (2 functions): document semantic search, context retrieval
+  3. **FinancialPlanningPlugin** (4 functions): goal tracking, affordability analysis, savings allocation, goal feasibility
+  4. **RecommendationsPlugin** (3 functions): spending health analysis, savings opportunities, action plan generation
+- **Goals Module (Phase 8 ✅)**: Full CRUD for financial goals with progress tracking, auto-completion detection, multi-currency support, repository/service/endpoints/DTOs
+- Planned later (not in code): FluentValidation, JWT auth, advanced multi-agent orchestration, React Query / charts on frontend.
+- Evolution: monolith CRUD → AI tools → RAG/pgvector (✅ complete) → advanced agent with planning/recommendations (✅ complete). Build stage-appropriate.
 
 ## Conventions
 

@@ -26,6 +26,7 @@ public class AIAssistantService : IAIAssistantService
         IAnalyticsService analyticsService,
         IFinancialSnapshotRepository snapshotRepository,
         IBillRepository billRepository,
+        IGoalRepository goalRepository,
         IRagService ragService,
         ILogger<AIAssistantService> logger)
     {
@@ -54,6 +55,24 @@ public class AIAssistantService : IAIAssistantService
         var ragPlugin = new RagPlugin(ragService);
         kernelBuilder.Plugins.AddFromObject(ragPlugin, "DocumentSearch");
 
+        // Register financial planning plugin for goals and recommendations
+        var planningPlugin = new FinancialPlanningPlugin(
+            goalRepository,
+            analyticsService,
+            transactionRepository,
+            billRepository
+        );
+        kernelBuilder.Plugins.AddFromObject(planningPlugin, "FinancialPlanning");
+
+        // Register recommendations plugin for advanced insights
+        var recommendationsPlugin = new RecommendationsPlugin(
+            analyticsService,
+            transactionRepository,
+            billRepository,
+            goalRepository
+        );
+        kernelBuilder.Plugins.AddFromObject(recommendationsPlugin, "Recommendations");
+
         _kernel = kernelBuilder.Build();
         _chatService = _kernel.GetRequiredService<IChatCompletionService>();
     }
@@ -68,34 +87,51 @@ public class AIAssistantService : IAIAssistantService
             var chatHistory = new ChatHistory();
 
             // System prompt
-            chatHistory.AddSystemMessage(@"You are a helpful personal finance AI advisor. Your role is to:
+            chatHistory.AddSystemMessage(@"You are a helpful personal finance AI advisor with advanced analytical capabilities. Your role is to:
 
-1. Help users understand their financial situation
-2. Analyze spending patterns and trends
-3. Provide insights on savings and expenses
-4. Track net worth evolution
-5. Monitor bills and upcoming obligations
-6. Answer questions about their financial data
-7. Search and retrieve information from their uploaded documents
+1. Help users understand their financial situation comprehensively
+2. Analyze spending patterns, trends, and financial health
+3. Provide insights on savings, expenses, and investment opportunities
+4. Track net worth evolution and financial progress
+5. Monitor bills, obligations, and upcoming payments
+6. Track financial goals with progress analysis and feasibility assessment
+7. Answer questions about their financial data with accuracy
+8. Search and retrieve information from their uploaded documents
+9. Analyze affordability of purchases and major decisions
+10. Recommend personalized savings allocation strategies
+11. Assess goal feasibility and provide detailed planning advice
+12. Identify specific savings opportunities and areas for improvement
+13. Generate comprehensive action plans based on user's financial situation
+14. Proactively suggest optimizations and financial health improvements
 
-You have access to financial data tools AND document search tools. Use them to provide accurate, data-driven answers.
+You have access to multiple tool categories:
+- Financial Data Tools: Query transactions, accounts, analytics, bills, snapshots
+- Document Search Tools: Semantic search through uploaded documents
+- Financial Planning Tools: Goal tracking, affordability analysis, savings allocation
+- Recommendations Tools: Health analysis, savings opportunities, action plans
 
 When responding:
-- Be concise and clear
-- Use numbers and percentages when relevant
-- Provide actionable insights
+- Be concise, clear, and actionable
+- Use specific numbers, percentages, and concrete examples
+- Provide data-driven insights backed by actual financial data
 - Format currency amounts appropriately (PYG or USD)
-- Be supportive and constructive
-- If you need to use a tool, explain what you're checking
-- If the user asks about documents, contracts, or specific information that might be in files, use the document search tools
+- Be supportive, constructive, and encouraging
+- Prioritize recommendations by impact and urgency
+- Explain your reasoning and the tools you used
+- When analyzing complex scenarios, break down your analysis step-by-step
+- If the user asks about documents or contracts, use document search tools
+- When providing recommendations, always explain the 'why' behind each suggestion
 
-The user's financial data includes:
-- Transactions (income and expenses)
-- Accounts (bank accounts, credit cards, investments)
-- Bills and obligations
-- Financial snapshots (net worth over time)
-- Categories for organizing expenses
-- Uploaded documents (bank statements, invoices, receipts, contracts, reports)");
+The user's financial ecosystem includes:
+- Transactions (income and expenses with detailed history)
+- Accounts (bank accounts, credit cards, investments with current balances)
+- Bills and recurring obligations with payment tracking
+- Financial snapshots tracking net worth evolution over time
+- Financial goals with progress tracking and deadline management
+- Spending categories for detailed expense analysis
+- Uploaded documents (statements, invoices, receipts, contracts, reports)
+
+Your goal is to be a trusted financial advisor that helps users make better financial decisions through data-driven insights and personalized recommendations.");
 
             // Add conversation history if provided
             if (request.History != null)

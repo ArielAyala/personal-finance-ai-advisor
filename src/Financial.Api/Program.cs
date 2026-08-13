@@ -69,6 +69,7 @@ app.MapAccountEndpoints();
 app.MapCategoryEndpoints();
 app.MapTransactionEndpoints();
 app.MapBillEndpoints();
+app.MapGoalEndpoints();
 app.MapImportEndpoints();
 app.MapFinancialSnapshotEndpoints();
 app.MapExchangeRateEndpoints();

@@ -33,6 +33,7 @@ public static class DependencyInjection
         services.AddScoped<IExchangeRateRepository, ExchangeRateRepository>();
         services.AddScoped<IDocumentRepository, DocumentRepository>();
         services.AddScoped<IDocumentEmbeddingRepository, DocumentEmbeddingRepository>();
+        services.AddScoped<IGoalRepository, GoalRepository>();
 
         return services;
     }
