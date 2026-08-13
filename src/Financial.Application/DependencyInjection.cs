@@ -16,6 +16,7 @@ public static class DependencyInjection
         services.AddScoped<BillService>();
         services.AddScoped<FinancialSnapshotService>();
         services.AddScoped<ExchangeRateService>();
+        services.AddScoped<IAnalyticsService, AnalyticsService>();
 
         // Register import services
         services.AddScoped<IImportService, ImportService>();

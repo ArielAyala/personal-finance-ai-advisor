@@ -381,3 +381,85 @@ Content-Type: application/json
 DELETE {{Financial.Api_HostAddress}}/api/bills/{billId}
 
 ###
+
+### ========================================
+### Analytics Endpoints
+### ========================================
+
+### Get monthly summary (current month)
+GET {{Financial.Api_HostAddress}}/api/analytics/monthly-summary?year=2026&month=8&currency=PYG
+Accept: application/json
+
+###
+
+### Get monthly summary (July 2026)
+GET {{Financial.Api_HostAddress}}/api/analytics/monthly-summary?year=2026&month=7&currency=PYG
+Accept: application/json
+
+###
+
+### Get expense trends (last 6 months)
+GET {{Financial.Api_HostAddress}}/api/analytics/expense-trends?startYear=2026&startMonth=2&endYear=2026&endMonth=8&currency=PYG
+Accept: application/json
+
+###
+
+### Get expense trends (last 3 months)
+GET {{Financial.Api_HostAddress}}/api/analytics/expense-trends?startYear=2026&startMonth=5&endYear=2026&endMonth=8&currency=PYG
+Accept: application/json
+
+###
+
+### Get category trends
+GET {{Financial.Api_HostAddress}}/api/analytics/category-trends?startYear=2026&startMonth=1&endYear=2026&endMonth=8&currency=PYG
+Accept: application/json
+
+###
+
+### Get savings rate
+GET {{Financial.Api_HostAddress}}/api/analytics/savings-rate?startYear=2026&startMonth=1&endYear=2026&endMonth=8&currency=PYG
+Accept: application/json
+
+###
+
+### Get net worth evolution (all time)
+GET {{Financial.Api_HostAddress}}/api/analytics/net-worth-evolution?currency=PYG
+Accept: application/json
+
+###
+
+### Get net worth evolution (year to date)
+GET {{Financial.Api_HostAddress}}/api/analytics/net-worth-evolution?startDate=2026-01-01&currency=PYG
+Accept: application/json
+
+###
+
+### Get net worth evolution (custom range)
+GET {{Financial.Api_HostAddress}}/api/analytics/net-worth-evolution?startDate=2025-06-01&endDate=2026-08-31&currency=PYG
+Accept: application/json
+
+###
+
+### Get debt analysis
+GET {{Financial.Api_HostAddress}}/api/analytics/debt-analysis?currency=PYG
+Accept: application/json
+
+###
+
+### Get upcoming obligations (next 30 days)
+GET {{Financial.Api_HostAddress}}/api/analytics/upcoming-obligations?currency=PYG
+Accept: application/json
+
+###
+
+### Get upcoming obligations (current month)
+GET {{Financial.Api_HostAddress}}/api/analytics/upcoming-obligations?startDate=2026-08-01&endDate=2026-08-31&currency=PYG
+Accept: application/json
+
+###
+
+### Get upcoming obligations (next 3 months)
+GET {{Financial.Api_HostAddress}}/api/analytics/upcoming-obligations?startDate=2026-08-01&endDate=2026-10-31&currency=PYG
+Accept: application/json
+
+###
