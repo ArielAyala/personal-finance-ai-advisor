@@ -463,3 +463,195 @@ GET {{Financial.Api_HostAddress}}/api/analytics/upcoming-obligations?startDate=2
 Accept: application/json
 
 ###
+
+#############################################
+# AI ASSISTANT ENDPOINTS
+#############################################
+
+### Get quick financial insights
+GET {{Financial.Api_HostAddress}}/api/ai/quick-insights
+Accept: application/json
+
+###
+
+### Simple chat - How much did I spend this month?
+POST {{Financial.Api_HostAddress}}/api/ai/chat
+Content-Type: application/json
+
+{
+  "message": "How much did I spend this month?"
+}
+
+###
+
+### Chat with context - Follow-up question
+POST {{Financial.Api_HostAddress}}/api/ai/chat
+Content-Type: application/json
+
+{
+  "message": "What was my biggest expense category?",
+  "history": [
+    {
+      "role": "user",
+      "content": "How much did I spend this month?",
+      "timestamp": "2026-08-13T10:00:00Z"
+    },
+    {
+      "role": "assistant",
+      "content": "You spent 5,420,000 PYG this month.",
+      "timestamp": "2026-08-13T10:00:05Z"
+    }
+  ]
+}
+
+###
+
+### Ask about savings
+POST {{Financial.Api_HostAddress}}/api/ai/chat
+Content-Type: application/json
+
+{
+  "message": "Am I saving money? How is my savings rate?"
+}
+
+###
+
+### Ask about net worth
+POST {{Financial.Api_HostAddress}}/api/ai/chat
+Content-Type: application/json
+
+{
+  "message": "What's my current net worth and how has it changed over time?"
+}
+
+###
+
+### Ask about upcoming bills
+POST {{Financial.Api_HostAddress}}/api/ai/chat
+Content-Type: application/json
+
+{
+  "message": "What bills do I have coming up in the next week?"
+}
+
+###
+
+### Ask about spending trends
+POST {{Financial.Api_HostAddress}}/api/ai/chat
+Content-Type: application/json
+
+{
+  "message": "Are my expenses increasing or decreasing? Show me the trend over the last 3 months."
+}
+
+###
+
+### Ask about specific category
+POST {{Financial.Api_HostAddress}}/api/ai/chat
+Content-Type: application/json
+
+{
+  "message": "How much am I spending on food and restaurants?"
+}
+
+###
+
+### Ask for financial advice
+POST {{Financial.Api_HostAddress}}/api/ai/chat
+Content-Type: application/json
+
+{
+  "message": "Can I afford to buy a new laptop for $1,500 USD?"
+}
+
+###
+
+### Ask about debt
+POST {{Financial.Api_HostAddress}}/api/ai/chat
+Content-Type: application/json
+
+{
+  "message": "How much debt do I have and what are my monthly payments?"
+}
+
+###
+
+### Structured query - Monthly summary
+POST {{Financial.Api_HostAddress}}/api/ai/query
+Content-Type: application/json
+
+"What were my total expenses and income for July 2026?"
+
+###
+
+### Structured query - Category analysis
+POST {{Financial.Api_HostAddress}}/api/ai/query
+Content-Type: application/json
+
+"Which category did I spend the most money on in the last 3 months?"
+
+###
+
+### Structured query - Savings analysis
+POST {{Financial.Api_HostAddress}}/api/ai/query
+Content-Type: application/json
+
+"Calculate my average monthly savings rate for the last 6 months"
+
+###
+
+### Structured query - Account balances
+POST {{Financial.Api_HostAddress}}/api/ai/query
+Content-Type: application/json
+
+"Show me all my account balances and total assets"
+
+###
+
+### Structured query - Net worth growth
+POST {{Financial.Api_HostAddress}}/api/ai/query
+Content-Type: application/json
+
+"How much has my net worth grown this year?"
+
+###
+
+### Complex conversation - Financial planning
+POST {{Financial.Api_HostAddress}}/api/ai/chat
+Content-Type: application/json
+
+{
+  "message": "I want to save $10,000 USD by the end of the year. Based on my current spending and income, is this realistic? What would I need to cut?"
+}
+
+###
+
+### Ask about recent transactions
+POST {{Financial.Api_HostAddress}}/api/ai/chat
+Content-Type: application/json
+
+{
+  "message": "What were my last 5 transactions?"
+}
+
+###
+
+### Compare months
+POST {{Financial.Api_HostAddress}}/api/ai/chat
+Content-Type: application/json
+
+{
+  "message": "Compare my spending between July and August 2026"
+}
+
+###
+
+### Multi-currency question
+POST {{Financial.Api_HostAddress}}/api/ai/chat
+Content-Type: application/json
+
+{
+  "message": "Show me my accounts in both USD and PYG"
+}
+
+###
