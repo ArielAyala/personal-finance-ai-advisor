@@ -1,12 +1,18 @@
 using Financial.Api.Endpoints;
 using Financial.Application;
 using Financial.Infrastructure;
+using FluentValidation;
+using FluentValidation.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
+
+// Add FluentValidation
+builder.Services.AddFluentValidationAutoValidation();
+builder.Services.AddValidatorsFromAssemblyContaining<Financial.Application.DTOs.CreateAccountDto>();
 
 // Add Swagger UI
 builder.Services.AddSwaggerGen(options =>

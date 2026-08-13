@@ -1,6 +1,7 @@
 using Financial.Application.Interfaces;
 using Financial.Application.Services;
 using Financial.Application.Services.Import;
+using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Financial.Application;
@@ -34,6 +35,9 @@ public static class DependencyInjection
         services.AddScoped<ITextExtractionService, TextExtractionService>();
         services.AddScoped<IRagService, RagService>();
         services.AddScoped<IFileStorageService, FileStorageService>();
+
+        // Register FluentValidation validators from Application assembly
+        services.AddValidatorsFromAssembly(typeof(DependencyInjection).Assembly);
 
         return services;
     }

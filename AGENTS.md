@@ -27,8 +27,10 @@ Solution: `PersonalFinanceAIAdvisor.sln` (backend projects only). Frontend is se
 - Clean Architecture layers as above
 - Packages today: 
   - **OpenAPI** + **Swagger** on Api
+  - **FluentValidation.AspNetCore 11.3.1** on Api (auto-validation pipeline)
   - **EF Core Design** + **Npgsql.EntityFrameworkCore.PostgreSQL 9.0.4** + **Pgvector.EntityFrameworkCore 0.3.0** on Infrastructure
   - **Riok.Mapperly 4.3.1** on Application
+  - **FluentValidation.DependencyInjectionExtensions 12.1.1** on Application (declarative validation)
   - **Microsoft.SemanticKernel 1.79.0** on Application (AI integration)
   - **iText7 9.0.0** on Application (PDF text extraction)
   - **EPPlus 7.5.2** on Application (Excel parsing & text extraction)
@@ -43,6 +45,12 @@ Solution: `PersonalFinanceAIAdvisor.sln` (backend projects only). Frontend is se
   - **Phase 8**: AI Agent Advanced (Goals module, financial planning tools, recommendations engine, multi-step reasoning)
 - Entity→DTO mapping: **Mapperly** (source generator) with mappers in `Financial.Application/Mappers/`
 - DTO→entity (Create/Update): **manual** in service layer (preserves business logic, validation, ownership checks)
+- **Validation**: **FluentValidation** for all DTOs with declarative validators in `Financial.Application/Validators/`
+  - Auto-validation pipeline configured in Program.cs
+  - Validators for: Goals, Transactions, Bills, Accounts, FinancialSnapshots, SnapshotAccounts
+  - Custom async validators for entity existence checks (Category, Account)
+  - Common validation rules in BaseValidators.cs (currency validation PYG/USD)
+  - Business logic validations (ownership, authorization) remain in service layer
 - No tests, CI, Docker yet
 
 ### Dependency rules (enforce)
@@ -117,8 +125,9 @@ If only npm is available after a proper `package.json` exists: `npm install` / `
   3. **FinancialPlanningPlugin** (4 functions): goal tracking, affordability analysis, savings allocation, goal feasibility
   4. **RecommendationsPlugin** (3 functions): spending health analysis, savings opportunities, action plan generation
 - **Goals Module (Phase 8 ✅)**: Full CRUD for financial goals with progress tracking, auto-completion detection, multi-currency support, repository/service/endpoints/DTOs
-- Planned later (not in code): FluentValidation, JWT auth, advanced multi-agent orchestration, React Query / charts on frontend.
-- Evolution: monolith CRUD → AI tools → RAG/pgvector (✅ complete) → advanced agent with planning/recommendations (✅ complete). Build stage-appropriate.
+- **FluentValidation (Phase 9 ✅)**: Declarative validation layer with auto-validation pipeline. All DTOs validated before reaching service layer. Custom async validators for entity existence. Business logic validations remain in services.
+- Planned later (not in code): JWT auth, advanced multi-agent orchestration, React Query / charts on frontend.
+- Evolution: monolith CRUD → AI tools → RAG/pgvector (✅ complete) → advanced agent with planning/recommendations (✅ complete) → declarative validation (✅ complete). Build stage-appropriate.
 
 ## Conventions
 
