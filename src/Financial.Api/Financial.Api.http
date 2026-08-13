@@ -255,3 +255,129 @@ DELETE {{Financial.Api_HostAddress}}/api/snapshots/accounts/{snapshotAccountId}
 DELETE {{Financial.Api_HostAddress}}/api/snapshots/{snapshotId}
 
 ###
+
+### ========================================
+### PHASE 4: Bills Module
+### ========================================
+
+### Get all bills
+GET {{Financial.Api_HostAddress}}/api/bills
+Accept: application/json
+
+###
+
+### Get active bills
+GET {{Financial.Api_HostAddress}}/api/bills/active
+Accept: application/json
+
+###
+
+### Get overdue bills
+GET {{Financial.Api_HostAddress}}/api/bills/overdue
+Accept: application/json
+
+###
+
+### Get upcoming bills (with date range)
+GET {{Financial.Api_HostAddress}}/api/bills/upcoming?startDate=2026-08-01&endDate=2026-08-31
+Accept: application/json
+
+###
+
+### Get monthly obligations for August 2026
+GET {{Financial.Api_HostAddress}}/api/bills/monthly-obligations/2026/8
+Accept: application/json
+
+###
+
+### Create monthly bill (Internet service)
+POST {{Financial.Api_HostAddress}}/api/bills
+Content-Type: application/json
+
+{
+  "title": "Internet Fibra Optica",
+  "amount": 250000,
+  "currency": "PYG",
+  "dueDate": "2026-08-10",
+  "periodicity": "Monthly",
+  "notes": "Monthly internet service"
+}
+
+###
+
+### Create installment bill (Notebook purchase)
+POST {{Financial.Api_HostAddress}}/api/bills
+Content-Type: application/json
+
+{
+  "title": "Notebook Lenovo",
+  "amount": 250000,
+  "currency": "PYG",
+  "dueDate": "2026-08-15",
+  "periodicity": "Monthly",
+  "installments": 12,
+  "notes": "12 monthly installments for laptop purchase"
+}
+
+###
+
+### Create one-time bill
+POST {{Financial.Api_HostAddress}}/api/bills
+Content-Type: application/json
+
+{
+  "title": "Annual Insurance",
+  "amount": 1800000,
+  "currency": "PYG",
+  "dueDate": "2026-12-31",
+  "periodicity": "OneTime",
+  "notes": "Annual insurance payment"
+}
+
+###
+
+### Get bill by ID (Replace {billId} with actual ID)
+GET {{Financial.Api_HostAddress}}/api/bills/{billId}
+Accept: application/json
+
+###
+
+### Update bill
+PUT {{Financial.Api_HostAddress}}/api/bills/{billId}
+Content-Type: application/json
+
+{
+  "title": "Internet Fibra Optica - Updated",
+  "amount": 275000,
+  "dueDate": "2026-09-10",
+  "notes": "Updated amount and due date"
+}
+
+###
+
+### Pay bill (partial or full payment)
+POST {{Financial.Api_HostAddress}}/api/bills/{billId}/pay
+Content-Type: application/json
+
+{
+  "paymentAmount": 250000,
+  "paymentDate": "2026-08-10"
+}
+
+###
+
+### Pay installment
+POST {{Financial.Api_HostAddress}}/api/bills/{billId}/pay
+Content-Type: application/json
+
+{
+  "paymentAmount": 250000,
+  "paymentDate": "2026-08-15"
+}
+
+###
+
+### Delete bill
+DELETE {{Financial.Api_HostAddress}}/api/bills/{billId}
+
+###

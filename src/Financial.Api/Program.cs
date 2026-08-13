@@ -68,6 +68,7 @@ if (!app.Environment.IsDevelopment())
 app.MapAccountEndpoints();
 app.MapCategoryEndpoints();
 app.MapTransactionEndpoints();
+app.MapBillEndpoints();
 app.MapImportEndpoints();
 app.MapFinancialSnapshotEndpoints();
 app.MapExchangeRateEndpoints();
