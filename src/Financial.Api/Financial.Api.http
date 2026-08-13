@@ -109,3 +109,149 @@ Date,Amount,Currency,Merchant,Category,Account,Notes
 ------WebKitFormBoundary7MA4YWxkTrZu0gW--
 
 ###
+
+### ========================================
+### PHASE 3: Financial Snapshot & Exchange Rates
+### ========================================
+
+### Get all exchange rates
+GET {{Financial.Api_HostAddress}}/api/exchange-rates
+Accept: application/json
+
+###
+
+### Create exchange rate USD to PYG
+POST {{Financial.Api_HostAddress}}/api/exchange-rates
+Content-Type: application/json
+
+{
+  "sourceCurrency": "USD",
+  "targetCurrency": "PYG",
+  "rate": 8150,
+  "date": "2026-08-01",
+  "source": "Manual input",
+  "notes": "Exchange rate for August 2026"
+}
+
+###
+
+### Query exchange rate (with date)
+GET {{Financial.Api_HostAddress}}/api/exchange-rates/query?sourceCurrency=USD&targetCurrency=PYG&date=2026-08-01
+Accept: application/json
+
+###
+
+### Query latest exchange rate
+GET {{Financial.Api_HostAddress}}/api/exchange-rates/query?sourceCurrency=USD&targetCurrency=PYG
+Accept: application/json
+
+###
+
+### Convert currency
+GET {{Financial.Api_HostAddress}}/api/exchange-rates/convert?amount=500&sourceCurrency=USD&targetCurrency=PYG&date=2026-08-01
+Accept: application/json
+
+###
+
+### Get all financial snapshots
+GET {{Financial.Api_HostAddress}}/api/snapshots
+Accept: application/json
+
+###
+
+### Get latest snapshot
+GET {{Financial.Api_HostAddress}}/api/snapshots/latest
+Accept: application/json
+
+###
+
+### Get net worth growth
+GET {{Financial.Api_HostAddress}}/api/snapshots/growth
+Accept: application/json
+
+###
+
+### Create financial snapshot (Draft)
+POST {{Financial.Api_HostAddress}}/api/snapshots
+Content-Type: application/json
+
+{
+  "date": "2026-07-31",
+  "baseCurrency": "PYG",
+  "exchangeRateDate": "2026-07-31",
+  "notes": "July 2026 closing"
+}
+
+###
+
+### Add account to snapshot (Replace {snapshotId} and {accountId} with actual IDs)
+POST {{Financial.Api_HostAddress}}/api/snapshots/{snapshotId}/accounts
+Content-Type: application/json
+
+{
+  "accountId": "{accountId}",
+  "originalAmount": 1000000,
+  "originalCurrency": "PYG"
+}
+
+###
+
+### Add USD account to snapshot with auto conversion
+POST {{Financial.Api_HostAddress}}/api/snapshots/{snapshotId}/accounts
+Content-Type: application/json
+
+{
+  "accountId": "{accountId}",
+  "originalAmount": 500,
+  "originalCurrency": "USD"
+}
+
+###
+
+### Add USD account to snapshot with manual exchange rate
+POST {{Financial.Api_HostAddress}}/api/snapshots/{snapshotId}/accounts
+Content-Type: application/json
+
+{
+  "accountId": "{accountId}",
+  "originalAmount": 500,
+  "originalCurrency": "USD",
+  "exchangeRate": 8150
+}
+
+###
+
+### Update snapshot
+PUT {{Financial.Api_HostAddress}}/api/snapshots/{snapshotId}
+Content-Type: application/json
+
+{
+  "notes": "Updated notes for July 2026 closing"
+}
+
+###
+
+### Close snapshot (makes it read-only)
+POST {{Financial.Api_HostAddress}}/api/snapshots/{snapshotId}/close
+
+###
+
+### Update snapshot account
+PUT {{Financial.Api_HostAddress}}/api/snapshots/accounts/{snapshotAccountId}
+Content-Type: application/json
+
+{
+  "originalAmount": 1100000
+}
+
+###
+
+### Remove account from snapshot
+DELETE {{Financial.Api_HostAddress}}/api/snapshots/accounts/{snapshotAccountId}
+
+###
+
+### Delete snapshot (only if Draft status)
+DELETE {{Financial.Api_HostAddress}}/api/snapshots/{snapshotId}
+
+###

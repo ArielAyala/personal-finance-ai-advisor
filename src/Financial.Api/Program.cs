@@ -8,6 +8,17 @@ var builder = WebApplication.CreateBuilder(args);
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
+// Add Swagger UI
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
+    {
+        Title = "Personal Finance AI Advisor API",
+        Version = "v1",
+        Description = "API for personal finance management with AI recommendations"
+    });
+});
+
 // Add CORS for frontend development
 builder.Services.AddCors(options =>
 {
@@ -34,6 +45,14 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+    
+    // Add Swagger UI
+    app.UseSwagger();
+    app.UseSwaggerUI(options =>
+    {
+        options.SwaggerEndpoint("/swagger/v1/swagger.json", "Personal Finance AI Advisor API v1");
+        options.RoutePrefix = "swagger"; // Access Swagger UI at /swagger
+    });
 }
 
 // CORS must be configured before any redirects
@@ -50,5 +69,7 @@ app.MapAccountEndpoints();
 app.MapCategoryEndpoints();
 app.MapTransactionEndpoints();
 app.MapImportEndpoints();
+app.MapFinancialSnapshotEndpoints();
+app.MapExchangeRateEndpoints();
 
 app.Run();
