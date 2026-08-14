@@ -1,5 +1,7 @@
+using Financial.Api.Extensions;
 using Financial.Application.DTOs;
 using Financial.Application.Services;
+using System.Security.Claims;
 
 namespace Financial.Api.Endpoints;
 
@@ -8,15 +10,13 @@ public static class FinancialSnapshotEndpoints
     public static void MapFinancialSnapshotEndpoints(this IEndpointRouteBuilder app)
     {
         var group = app.MapGroup("/api/snapshots")
-            .WithTags("Financial Snapshots");
+            .WithTags("Financial Snapshots")
+            .RequireAuthorization();
 
-        // TODO: Add authentication once auth is implemented
-        // For now using hardcoded userId for development
-        var devUserId = Guid.Parse("00000000-0000-0000-0000-000000000001");
-
-        group.MapGet("/", async (FinancialSnapshotService service) =>
+        group.MapGet("/", async (ClaimsPrincipal user, FinancialSnapshotService service) =>
         {
-            var snapshots = await service.GetUserSnapshotsAsync(devUserId);
+            var userId = user.GetUserId();
+            var snapshots = await service.GetUserSnapshotsAsync(userId);
             return Results.Ok(snapshots);
         })
         .WithName("GetSnapshots")
@@ -30,25 +30,28 @@ public static class FinancialSnapshotEndpoints
         .WithName("GetSnapshotById")
         .WithOpenApi();
 
-        group.MapGet("/latest", async (FinancialSnapshotService service) =>
+        group.MapGet("/latest", async (ClaimsPrincipal user, FinancialSnapshotService service) =>
         {
-            var snapshot = await service.GetLatestAsync(devUserId);
+            var userId = user.GetUserId();
+            var snapshot = await service.GetLatestAsync(userId);
             return snapshot != null ? Results.Ok(snapshot) : Results.NotFound();
         })
         .WithName("GetLatestSnapshot")
         .WithOpenApi();
 
-        group.MapGet("/growth", async (FinancialSnapshotService service) =>
+        group.MapGet("/growth", async (ClaimsPrincipal user, FinancialSnapshotService service) =>
         {
-            var growth = await service.GetNetWorthGrowthAsync(devUserId);
+            var userId = user.GetUserId();
+            var growth = await service.GetNetWorthGrowthAsync(userId);
             return growth != null ? Results.Ok(growth) : Results.NotFound();
         })
         .WithName("GetNetWorthGrowth")
         .WithOpenApi();
 
-        group.MapPost("/", async (CreateFinancialSnapshotDto dto, FinancialSnapshotService service) =>
+        group.MapPost("/", async (ClaimsPrincipal user, CreateFinancialSnapshotDto dto, FinancialSnapshotService service) =>
         {
-            var snapshot = await service.CreateAsync(devUserId, dto);
+            var userId = user.GetUserId();
+            var snapshot = await service.CreateAsync(userId, dto);
             return Results.Created($"/api/snapshots/{snapshot.Id}", snapshot);
         })
         .WithName("CreateSnapshot")

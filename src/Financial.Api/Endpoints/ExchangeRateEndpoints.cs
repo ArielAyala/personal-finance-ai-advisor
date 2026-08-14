@@ -1,5 +1,7 @@
+using Financial.Api.Extensions;
 using Financial.Application.DTOs;
 using Financial.Application.Services;
+using System.Security.Claims;
 
 namespace Financial.Api.Endpoints;
 
@@ -8,7 +10,8 @@ public static class ExchangeRateEndpoints
     public static void MapExchangeRateEndpoints(this IEndpointRouteBuilder app)
     {
         var group = app.MapGroup("/api/exchange-rates")
-            .WithTags("Exchange Rates");
+            .WithTags("Exchange Rates")
+            .RequireAuthorization();
 
         group.MapGet("/", async (ExchangeRateService service) =>
         {

@@ -1,6 +1,8 @@
+using Financial.Api.Extensions;
 using Financial.Application.DTOs;
 using Financial.Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace Financial.Api.Endpoints;
 
@@ -9,14 +11,12 @@ public static class AnalyticsEndpoints
     public static void MapAnalyticsEndpoints(this IEndpointRouteBuilder app)
     {
         var group = app.MapGroup("/api/analytics")
-            .WithTags("Analytics");
-
-        // TODO: Add authentication once auth is implemented
-        // For now using hardcoded userId for development
-        var devUserId = Guid.Parse("00000000-0000-0000-0000-000000000001");
+            .WithTags("Analytics")
+            .RequireAuthorization();
 
         // Monthly Summary
         group.MapGet("/monthly-summary", async (
+            ClaimsPrincipal user,
             [FromServices] IAnalyticsService service,
             [FromQuery] int year,
             [FromQuery] int month,
@@ -24,7 +24,8 @@ public static class AnalyticsEndpoints
         {
             try
             {
-                var summary = await service.GetMonthlySummaryAsync(devUserId, year, month, currency);
+                var userId = user.GetUserId();
+                var summary = await service.GetMonthlySummaryAsync(userId, year, month, currency);
                 return Results.Ok(summary);
             }
             catch (Exception ex)
@@ -38,6 +39,7 @@ public static class AnalyticsEndpoints
 
         // Expense Trends
         group.MapGet("/expense-trends", async (
+            ClaimsPrincipal user,
             [FromServices] IAnalyticsService service,
             [FromQuery] int startYear,
             [FromQuery] int startMonth,
@@ -47,8 +49,9 @@ public static class AnalyticsEndpoints
         {
             try
             {
+                var userId = user.GetUserId();
                 var range = new MonthRangeDto(startYear, startMonth, endYear, endMonth);
-                var trends = await service.GetExpenseTrendsAsync(devUserId, range, currency);
+                var trends = await service.GetExpenseTrendsAsync(userId, range, currency);
                 return Results.Ok(trends);
             }
             catch (Exception ex)
@@ -62,6 +65,7 @@ public static class AnalyticsEndpoints
 
         // Category Trends
         group.MapGet("/category-trends", async (
+            ClaimsPrincipal user,
             [FromServices] IAnalyticsService service,
             [FromQuery] int startYear,
             [FromQuery] int startMonth,
@@ -71,8 +75,9 @@ public static class AnalyticsEndpoints
         {
             try
             {
+                var userId = user.GetUserId();
                 var range = new MonthRangeDto(startYear, startMonth, endYear, endMonth);
-                var trends = await service.GetCategoryTrendsAsync(devUserId, range, currency);
+                var trends = await service.GetCategoryTrendsAsync(userId, range, currency);
                 return Results.Ok(trends);
             }
             catch (Exception ex)
@@ -86,6 +91,7 @@ public static class AnalyticsEndpoints
 
         // Savings Rate
         group.MapGet("/savings-rate", async (
+            ClaimsPrincipal user,
             [FromServices] IAnalyticsService service,
             [FromQuery] int startYear,
             [FromQuery] int startMonth,
@@ -95,8 +101,9 @@ public static class AnalyticsEndpoints
         {
             try
             {
+                var userId = user.GetUserId();
                 var range = new MonthRangeDto(startYear, startMonth, endYear, endMonth);
-                var savingsRate = await service.GetSavingsRateAsync(devUserId, range, currency);
+                var savingsRate = await service.GetSavingsRateAsync(userId, range, currency);
                 return Results.Ok(savingsRate);
             }
             catch (Exception ex)
@@ -110,6 +117,7 @@ public static class AnalyticsEndpoints
 
         // Net Worth Evolution
         group.MapGet("/net-worth-evolution", async (
+            ClaimsPrincipal user,
             [FromServices] IAnalyticsService service,
             [FromQuery] DateTime? startDate = null,
             [FromQuery] DateTime? endDate = null,
@@ -117,8 +125,9 @@ public static class AnalyticsEndpoints
         {
             try
             {
+                var userId = user.GetUserId();
                 var evolution = await service.GetNetWorthEvolutionAsync(
-                    devUserId, 
+                    userId, 
                     startDate, 
                     endDate, 
                     currency);
@@ -135,12 +144,14 @@ public static class AnalyticsEndpoints
 
         // Debt Analysis
         group.MapGet("/debt-analysis", async (
+            ClaimsPrincipal user,
             [FromServices] IAnalyticsService service,
             [FromQuery] string currency = "PYG") =>
         {
             try
             {
-                var debtAnalysis = await service.GetDebtAnalysisAsync(devUserId, currency);
+                var userId = user.GetUserId();
+                var debtAnalysis = await service.GetDebtAnalysisAsync(userId, currency);
                 return Results.Ok(debtAnalysis);
             }
             catch (Exception ex)
@@ -154,6 +165,7 @@ public static class AnalyticsEndpoints
 
         // Upcoming Obligations
         group.MapGet("/upcoming-obligations", async (
+            ClaimsPrincipal user,
             [FromServices] IAnalyticsService service,
             [FromQuery] DateTime? startDate = null,
             [FromQuery] DateTime? endDate = null,
@@ -161,8 +173,9 @@ public static class AnalyticsEndpoints
         {
             try
             {
+                var userId = user.GetUserId();
                 var obligations = await service.GetUpcomingObligationsAsync(
-                    devUserId,
+                    userId,
                     startDate,
                     endDate,
                     currency);

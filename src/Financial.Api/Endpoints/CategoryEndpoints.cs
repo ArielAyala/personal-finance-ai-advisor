@@ -1,5 +1,7 @@
+using Financial.Api.Extensions;
 using Financial.Application.DTOs;
 using Financial.Application.Services;
+using System.Security.Claims;
 
 namespace Financial.Api.Endpoints;
 
@@ -8,15 +10,13 @@ public static class CategoryEndpoints
     public static void MapCategoryEndpoints(this IEndpointRouteBuilder app)
     {
         var group = app.MapGroup("/api/categories")
-            .WithTags("Categories");
+            .WithTags("Categories")
+            .RequireAuthorization();
 
-        // TODO: Add authentication once auth is implemented
-        // For now using hardcoded userId for development
-        var devUserId = Guid.Parse("00000000-0000-0000-0000-000000000001");
-
-        group.MapGet("/", async (CategoryService service) =>
+        group.MapGet("/", async (ClaimsPrincipal user, CategoryService service) =>
         {
-            var categories = await service.GetUserCategoriesAsync(devUserId);
+            var userId = user.GetUserId();
+            var categories = await service.GetUserCategoriesAsync(userId);
             return Results.Ok(categories);
         })
         .WithName("GetCategories")
@@ -30,9 +30,10 @@ public static class CategoryEndpoints
         .WithName("GetCategoryById")
         .WithOpenApi();
 
-        group.MapPost("/", async (CreateCategoryDto dto, CategoryService service) =>
+        group.MapPost("/", async (ClaimsPrincipal user, CreateCategoryDto dto, CategoryService service) =>
         {
-            var category = await service.CreateCategoryAsync(devUserId, dto);
+            var userId = user.GetUserId();
+            var category = await service.CreateCategoryAsync(userId, dto);
             return Results.Created($"/api/categories/{category.Id}", category);
         })
         .WithName("CreateCategory")

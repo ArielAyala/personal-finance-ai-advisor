@@ -21,6 +21,7 @@ public class FinancialDbContext : DbContext
     public DbSet<Goal> Goals => Set<Goal>();
     public DbSet<Document> Documents => Set<Document>();
     public DbSet<DocumentEmbedding> DocumentEmbeddings => Set<DocumentEmbedding>();
+    public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

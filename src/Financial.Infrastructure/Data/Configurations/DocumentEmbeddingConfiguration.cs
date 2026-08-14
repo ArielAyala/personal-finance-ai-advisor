@@ -24,10 +24,8 @@ public class DocumentEmbeddingConfiguration : IEntityTypeConfiguration<DocumentE
             .HasColumnName("embedding")
             .HasColumnType("vector(1536)"); // OpenAI embeddings dimension
 
-        builder.HasOne(de => de.Document)
-            .WithMany()
-            .HasForeignKey(de => de.DocumentId)
-            .OnDelete(DeleteBehavior.Cascade);
+        builder.Property(de => de.CreatedAt)
+            .IsRequired();
 
         builder.HasIndex(de => de.DocumentId);
         

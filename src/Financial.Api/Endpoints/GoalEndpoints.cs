@@ -1,5 +1,7 @@
+using Financial.Api.Extensions;
 using Financial.Application.DTOs;
 using Financial.Application.Interfaces;
+using System.Security.Claims;
 
 namespace Financial.Api.Endpoints;
 
@@ -8,57 +10,60 @@ public static class GoalEndpoints
     public static void MapGoalEndpoints(this IEndpointRouteBuilder app)
     {
         var group = app.MapGroup("/api/goals")
-            .WithTags("Goals");
+            .WithTags("Goals")
+            .RequireAuthorization();
 
-        // TODO: Add authentication once auth is implemented
-        // For now using hardcoded userId for development
-        var devUserId = Guid.Parse("00000000-0000-0000-0000-000000000001");
-
-        group.MapGet("/", async (IGoalService service) =>
+        group.MapGet("/", async (ClaimsPrincipal user, IGoalService service) =>
         {
-            var goals = await service.GetAllAsync(devUserId);
+            var userId = user.GetUserId();
+            var goals = await service.GetAllAsync(userId);
             return Results.Ok(goals);
         })
         .WithName("GetGoals")
         .WithOpenApi();
 
-        group.MapGet("/active", async (IGoalService service) =>
+        group.MapGet("/active", async (ClaimsPrincipal user, IGoalService service) =>
         {
-            var goals = await service.GetActiveGoalsAsync(devUserId);
+            var userId = user.GetUserId();
+            var goals = await service.GetActiveGoalsAsync(userId);
             return Results.Ok(goals);
         })
         .WithName("GetActiveGoals")
         .WithOpenApi();
 
-        group.MapGet("/progress", async (IGoalService service) =>
+        group.MapGet("/progress", async (ClaimsPrincipal user, IGoalService service) =>
         {
-            var progress = await service.GetGoalsProgressAsync(devUserId);
+            var userId = user.GetUserId();
+            var progress = await service.GetGoalsProgressAsync(userId);
             return Results.Ok(progress);
         })
         .WithName("GetGoalsProgress")
         .WithOpenApi();
 
-        group.MapGet("/{id:guid}", async (Guid id, IGoalService service) =>
+        group.MapGet("/{id:guid}", async (ClaimsPrincipal user, Guid id, IGoalService service) =>
         {
-            var goal = await service.GetByIdAsync(devUserId, id);
+            var userId = user.GetUserId();
+            var goal = await service.GetByIdAsync(userId, id);
             return goal != null ? Results.Ok(goal) : Results.NotFound();
         })
         .WithName("GetGoalById")
         .WithOpenApi();
 
-        group.MapPost("/", async (CreateGoalDto dto, IGoalService service) =>
+        group.MapPost("/", async (ClaimsPrincipal user, CreateGoalDto dto, IGoalService service) =>
         {
-            var goal = await service.CreateAsync(devUserId, dto);
+            var userId = user.GetUserId();
+            var goal = await service.CreateAsync(userId, dto);
             return Results.Created($"/api/goals/{goal.Id}", goal);
         })
         .WithName("CreateGoal")
         .WithOpenApi();
 
-        group.MapPut("/{id:guid}", async (Guid id, UpdateGoalDto dto, IGoalService service) =>
+        group.MapPut("/{id:guid}", async (ClaimsPrincipal user, Guid id, UpdateGoalDto dto, IGoalService service) =>
         {
             try
             {
-                var goal = await service.UpdateAsync(devUserId, id, dto);
+                var userId = user.GetUserId();
+                var goal = await service.UpdateAsync(userId, id, dto);
                 return Results.Ok(goal);
             }
             catch (KeyNotFoundException)
@@ -73,11 +78,12 @@ public static class GoalEndpoints
         .WithName("UpdateGoal")
         .WithOpenApi();
 
-        group.MapPatch("/{id:guid}/progress", async (Guid id, UpdateGoalProgressDto dto, IGoalService service) =>
+        group.MapPatch("/{id:guid}/progress", async (ClaimsPrincipal user, Guid id, UpdateGoalProgressDto dto, IGoalService service) =>
         {
             try
             {
-                var goal = await service.UpdateProgressAsync(devUserId, id, dto);
+                var userId = user.GetUserId();
+                var goal = await service.UpdateProgressAsync(userId, id, dto);
                 return Results.Ok(goal);
             }
             catch (KeyNotFoundException)
@@ -96,11 +102,12 @@ public static class GoalEndpoints
         .WithName("UpdateGoalProgress")
         .WithOpenApi();
 
-        group.MapDelete("/{id:guid}", async (Guid id, IGoalService service) =>
+        group.MapDelete("/{id:guid}", async (ClaimsPrincipal user, Guid id, IGoalService service) =>
         {
             try
             {
-                await service.DeleteAsync(devUserId, id);
+                var userId = user.GetUserId();
+                await service.DeleteAsync(userId, id);
                 return Results.NoContent();
             }
             catch (KeyNotFoundException)

@@ -1,6 +1,8 @@
+using Financial.Api.Extensions;
 using Financial.Application.DTOs;
 using Financial.Application.Services;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace Financial.Api.Endpoints;
 
@@ -9,13 +11,11 @@ public static class TransactionEndpoints
     public static void MapTransactionEndpoints(this IEndpointRouteBuilder app)
     {
         var group = app.MapGroup("/api/transactions")
-            .WithTags("Transactions");
-
-        // TODO: Add authentication once auth is implemented
-        // For now using hardcoded userId for development
-        var devUserId = Guid.Parse("00000000-0000-0000-0000-000000000001");
+            .WithTags("Transactions")
+            .RequireAuthorization();
 
         group.MapGet("/", async (
+            ClaimsPrincipal user,
             TransactionService service,
             [FromQuery] DateTime? startDate = null,
             [FromQuery] DateTime? endDate = null,
@@ -25,6 +25,7 @@ public static class TransactionEndpoints
             [FromQuery] int pageNumber = 1,
             [FromQuery] int pageSize = 50) =>
         {
+            var userId = user.GetUserId();
             var filter = new TransactionFilterDto(
                 startDate,
                 endDate,
@@ -35,7 +36,7 @@ public static class TransactionEndpoints
                 pageSize
             );
 
-            var transactions = await service.GetUserTransactionsAsync(devUserId, filter);
+            var transactions = await service.GetUserTransactionsAsync(userId, filter);
             return Results.Ok(transactions);
         })
         .WithName("GetTransactions")
@@ -49,11 +50,12 @@ public static class TransactionEndpoints
         .WithName("GetTransactionById")
         .WithOpenApi();
 
-        group.MapPost("/", async (CreateTransactionDto dto, TransactionService service) =>
+        group.MapPost("/", async (ClaimsPrincipal user, CreateTransactionDto dto, TransactionService service) =>
         {
             try
             {
-                var transaction = await service.CreateTransactionAsync(devUserId, dto);
+                var userId = user.GetUserId();
+                var transaction = await service.CreateTransactionAsync(userId, dto);
                 return Results.Created($"/api/transactions/{transaction.Id}", transaction);
             }
             catch (KeyNotFoundException ex)

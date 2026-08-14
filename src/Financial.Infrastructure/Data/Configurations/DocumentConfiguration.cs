@@ -50,6 +50,11 @@ public class DocumentConfiguration : IEntityTypeConfiguration<Document>
             .HasForeignKey(d => d.UserId)
             .OnDelete(DeleteBehavior.Cascade);
 
+        builder.HasMany(d => d.Embeddings)
+            .WithOne(e => e.Document)
+            .HasForeignKey(e => e.DocumentId)
+            .OnDelete(DeleteBehavior.Cascade);
+
         builder.HasIndex(d => d.UserId);
         builder.HasIndex(d => d.Type);
         builder.HasIndex(d => d.IsProcessed);

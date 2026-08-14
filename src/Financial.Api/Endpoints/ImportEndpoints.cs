@@ -1,6 +1,8 @@
+using Financial.Api.Extensions;
 using Financial.Application.DTOs.Import;
 using Financial.Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace Financial.Api.Endpoints;
 
@@ -13,16 +15,15 @@ public static class ImportEndpoints
     {
         var group = app.MapGroup("/api/import")
             .WithTags("Import")
-            .DisableAntiforgery(); // Required for file uploads in minimal API
-
-        // TODO: Add authentication once auth is implemented
-        // For now using hardcoded userId for development
-        var devUserId = Guid.Parse("00000000-0000-0000-0000-000000000001");
+            .DisableAntiforgery() // Required for file uploads in minimal API
+            .RequireAuthorization();
 
         group.MapPost("/preview", async (
             IFormFile file,
+            ClaimsPrincipal user,
             IImportService importService) =>
         {
+            var userId = user.GetUserId();
             try
             {
                 // Validate file
@@ -44,7 +45,7 @@ public static class ImportEndpoints
 
                 // Parse and preview
                 using var stream = file.OpenReadStream();
-                var preview = await importService.PreviewImportAsync(stream, file.FileName, devUserId);
+                var preview = await importService.PreviewImportAsync(stream, file.FileName, userId);
 
                 return Results.Ok(preview);
             }
@@ -62,11 +63,13 @@ public static class ImportEndpoints
 
         group.MapPost("/execute", async (
             [FromBody] ImportRequestDto request,
+            ClaimsPrincipal user,
             IImportService importService) =>
         {
+            var userId = user.GetUserId();
             try
             {
-                var result = await importService.ExecuteImportAsync(request, devUserId);
+                var result = await importService.ExecuteImportAsync(request, userId);
                 
                 if (result.Success)
                 {

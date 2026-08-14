@@ -1,6 +1,8 @@
+using Financial.Api.Extensions;
 using Financial.Application.DTOs;
 using Financial.Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace Financial.Api.Endpoints;
 
@@ -13,20 +15,21 @@ public static class AIAssistantEndpoints
     {
         var group = app.MapGroup("/api/ai")
             .WithTags("AI Assistant")
-            .WithOpenApi();
+            .WithOpenApi()
+            .RequireAuthorization();
 
         // Chat with AI assistant
         group.MapPost("/chat", async (
+            ClaimsPrincipal user,
             [FromBody] ChatRequestDto request,
             [FromServices] IAIAssistantService aiService,
             CancellationToken cancellationToken) =>
         {
             try
             {
-                // TODO: Get actual user ID from authentication
-                var devUserId = new Guid("00000000-0000-0000-0000-000000000001");
+                var userId = user.GetUserId();
 
-                var response = await aiService.ChatAsync(devUserId, request, cancellationToken);
+                var response = await aiService.ChatAsync(userId, request, cancellationToken);
                 return Results.Ok(response);
             }
             catch (Exception ex)
@@ -51,21 +54,21 @@ You can optionally provide conversation history to maintain context.")
 
         // Execute structured financial query
         group.MapPost("/query", async (
+            ClaimsPrincipal user,
             [FromBody] string query,
             [FromServices] IAIAssistantService aiService,
             CancellationToken cancellationToken) =>
         {
             try
             {
-                // TODO: Get actual user ID from authentication
-                var devUserId = new Guid("00000000-0000-0000-0000-000000000001");
+                var userId = user.GetUserId();
 
                 if (string.IsNullOrWhiteSpace(query))
                 {
                     return Results.BadRequest(new { error = "Query cannot be empty" });
                 }
 
-                var result = await aiService.QueryFinancialDataAsync(devUserId, query, cancellationToken);
+                var result = await aiService.QueryFinancialDataAsync(userId, query, cancellationToken);
                 return Results.Ok(result);
             }
             catch (Exception ex)
@@ -83,13 +86,13 @@ then provide a structured response with sources.")
 
         // Quick questions endpoint (common queries)
         group.MapGet("/quick-insights", async (
+            ClaimsPrincipal user,
             [FromServices] IAIAssistantService aiService,
             CancellationToken cancellationToken) =>
         {
             try
             {
-                // TODO: Get actual user ID from authentication
-                var devUserId = new Guid("00000000-0000-0000-0000-000000000001");
+                var userId = user.GetUserId();
 
                 // Generate a quick financial summary
                 var query = @"Provide a brief financial overview including:
@@ -99,7 +102,7 @@ then provide a structured response with sources.")
 4. Latest net worth (if available)
 Keep it concise and actionable.";
 
-                var result = await aiService.QueryFinancialDataAsync(devUserId, query, cancellationToken);
+                var result = await aiService.QueryFinancialDataAsync(userId, query, cancellationToken);
                 return Results.Ok(result);
             }
             catch (Exception ex)

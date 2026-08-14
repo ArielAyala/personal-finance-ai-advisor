@@ -1,5 +1,7 @@
+using Financial.Api.Extensions;
 using Financial.Application.DTOs;
 using Financial.Application.Services;
+using System.Security.Claims;
 
 namespace Financial.Api.Endpoints;
 
@@ -8,15 +10,13 @@ public static class AccountEndpoints
     public static void MapAccountEndpoints(this IEndpointRouteBuilder app)
     {
         var group = app.MapGroup("/api/accounts")
-            .WithTags("Accounts");
+            .WithTags("Accounts")
+            .RequireAuthorization();
 
-        // TODO: Add authentication once auth is implemented
-        // For now using hardcoded userId for development
-        var devUserId = Guid.Parse("00000000-0000-0000-0000-000000000001");
-
-        group.MapGet("/", async (AccountService service) =>
+        group.MapGet("/", async (ClaimsPrincipal user, AccountService service) =>
         {
-            var accounts = await service.GetUserAccountsAsync(devUserId);
+            var userId = user.GetUserId();
+            var accounts = await service.GetUserAccountsAsync(userId);
             return Results.Ok(accounts);
         })
         .WithName("GetAccounts")
@@ -30,9 +30,10 @@ public static class AccountEndpoints
         .WithName("GetAccountById")
         .WithOpenApi();
 
-        group.MapPost("/", async (CreateAccountDto dto, AccountService service) =>
+        group.MapPost("/", async (ClaimsPrincipal user, CreateAccountDto dto, AccountService service) =>
         {
-            var account = await service.CreateAccountAsync(devUserId, dto);
+            var userId = user.GetUserId();
+            var account = await service.CreateAccountAsync(userId, dto);
             return Results.Created($"/api/accounts/{account.Id}", account);
         })
         .WithName("CreateAccount")

@@ -19,4 +19,5 @@ public class User
     public ICollection<FinancialSnapshot> FinancialSnapshots { get; set; } = new List<FinancialSnapshot>();
     public ICollection<Goal> Goals { get; set; } = new List<Goal>();
     public ICollection<Document> Documents { get; set; } = new List<Document>();
+    public ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();
 }

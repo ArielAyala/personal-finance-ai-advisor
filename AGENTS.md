@@ -28,10 +28,13 @@ Solution: `PersonalFinanceAIAdvisor.sln` (backend projects only). Frontend is se
 - Packages today: 
   - **OpenAPI** + **Swagger** on Api
   - **FluentValidation.AspNetCore 11.3.1** on Api (auto-validation pipeline)
+  - **Microsoft.AspNetCore.Authentication.JwtBearer 9.0.0** on Api (JWT authentication)
   - **EF Core Design** + **Npgsql.EntityFrameworkCore.PostgreSQL 9.0.4** + **Pgvector.EntityFrameworkCore 0.3.0** on Infrastructure
   - **Riok.Mapperly 4.3.1** on Application
   - **FluentValidation.DependencyInjectionExtensions 12.1.1** on Application (declarative validation)
   - **Microsoft.SemanticKernel 1.79.0** on Application (AI integration)
+  - **System.IdentityModel.Tokens.Jwt 8.0.1** on Application (JWT token generation)
+  - **BCrypt.Net-Next 4.0.3** on Application (password hashing)
   - **iText7 9.0.0** on Application (PDF text extraction)
   - **EPPlus 7.5.2** on Application (Excel parsing & text extraction)
 - Implemented modules:
@@ -43,14 +46,25 @@ Solution: `PersonalFinanceAIAdvisor.sln` (backend projects only). Frontend is se
   - **Phase 6**: AI Assistant v1 (Semantic Kernel + OpenAI integration with 9 financial data tools)
   - **Phase 7**: RAG Integration (Document upload/processing, pgvector semantic search, AI document-aware chat)
   - **Phase 8**: AI Agent Advanced (Goals module, financial planning tools, recommendations engine, multi-step reasoning)
+  - **Phase 9**: JWT Authentication (Register, Login, RefreshToken, password validation, token-based auth on all endpoints)
 - Entity→DTO mapping: **Mapperly** (source generator) with mappers in `Financial.Application/Mappers/`
 - DTO→entity (Create/Update): **manual** in service layer (preserves business logic, validation, ownership checks)
 - **Validation**: **FluentValidation** for all DTOs with declarative validators in `Financial.Application/Validators/`
   - Auto-validation pipeline configured in Program.cs
-  - Validators for: Goals, Transactions, Bills, Accounts, FinancialSnapshots, SnapshotAccounts
+  - Validators for: Auth (Register, Login, RefreshToken), Goals, Transactions, Bills, Accounts, FinancialSnapshots, SnapshotAccounts
   - Custom async validators for entity existence checks (Category, Account)
   - Common validation rules in BaseValidators.cs (currency validation PYG/USD)
+  - Password strength validation: min 8 chars, uppercase, lowercase, digit
   - Business logic validations (ownership, authorization) remain in service layer
+- **Authentication**: **JWT Bearer** token-based authentication
+  - AuthService in Application layer with Register, Login, RefreshToken
+  - BCrypt password hashing
+  - Access tokens (60 min default) + Refresh tokens (7 days default)
+  - RefreshToken entity for rotation and revocation
+  - All API endpoints protected with `.RequireAuthorization()` except auth endpoints
+  - ClaimsPrincipal extension method `GetUserId()` extracts userId from JWT claims
+  - Swagger UI configured with Bearer token authentication
+  - JwtSettings stored in user secrets (Secret, Issuer, Audience, ExpirationMinutes, RefreshTokenExpirationDays)
 - No tests, CI, Docker yet
 
 ### Dependency rules (enforce)
@@ -116,7 +130,7 @@ If only npm is available after a proper `package.json` exists: `npm install` / `
 
 - **Data first**: PostgreSQL is source of truth. AI reasons over tools/SQL; it must not own financial state.
 - **Multi-currency from day one**: store original currency on accounts/transactions/obligations/snapshots. Primary currencies **PYG** and **USD**. Base reporting currency default **PYG** via historical `ExchangeRate` (user-entered).
-- **Domain entities**: Account, Transaction, Category, Bill, FinancialSnapshot (+ SnapshotAccount), ExchangeRate, Document, DocumentEmbedding, Goal.
+- **Domain entities**: Account, Transaction, Category, Bill, FinancialSnapshot (+ SnapshotAccount), ExchangeRate, Document, DocumentEmbedding, Goal, RefreshToken.
 - Snapshot lifecycle: **Draft** (editable) → **Closed** (historical).
 - **RAG (Phase 7 ✅)**: Document ingestion pipeline (upload → text extraction → chunking → OpenAI embeddings → pgvector storage), HNSW index for fast similarity search, RAG plugin for AI agent.
 - **AI Architecture (Phase 8 ✅)**: Semantic Kernel orchestrates 4 plugin groups:
@@ -126,8 +140,9 @@ If only npm is available after a proper `package.json` exists: `npm install` / `
   4. **RecommendationsPlugin** (3 functions): spending health analysis, savings opportunities, action plan generation
 - **Goals Module (Phase 8 ✅)**: Full CRUD for financial goals with progress tracking, auto-completion detection, multi-currency support, repository/service/endpoints/DTOs
 - **FluentValidation (Phase 9 ✅)**: Declarative validation layer with auto-validation pipeline. All DTOs validated before reaching service layer. Custom async validators for entity existence. Business logic validations remain in services.
-- Planned later (not in code): JWT auth, advanced multi-agent orchestration, React Query / charts on frontend.
-- Evolution: monolith CRUD → AI tools → RAG/pgvector (✅ complete) → advanced agent with planning/recommendations (✅ complete) → declarative validation (✅ complete). Build stage-appropriate.
+- **JWT Authentication (Phase 9 ✅)**: Token-based authentication with Register, Login, RefreshToken endpoints. BCrypt password hashing, refresh token rotation, all endpoints protected.
+- Planned later (not in code): Advanced multi-agent orchestration, React Query / charts on frontend.
+- Evolution: monolith CRUD → AI tools → RAG/pgvector (✅ complete) → advanced agent with planning/recommendations (✅ complete) → declarative validation (✅ complete) → JWT auth (✅ complete). Build stage-appropriate.
 
 ## Conventions
 

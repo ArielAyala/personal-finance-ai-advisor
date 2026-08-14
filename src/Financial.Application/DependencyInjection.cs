@@ -11,6 +11,7 @@ public static class DependencyInjection
     public static IServiceCollection AddApplication(this IServiceCollection services)
     {
         // Register application services
+        services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<AccountService>();
         services.AddScoped<CategoryService>();
         services.AddScoped<TransactionService>();

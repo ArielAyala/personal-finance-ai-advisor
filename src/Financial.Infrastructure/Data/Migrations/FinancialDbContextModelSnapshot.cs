@@ -288,9 +288,6 @@ namespace Financial.Infrastructure.Data.Migrations
                     b.Property<Guid>("DocumentId")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid?>("DocumentId1")
-                        .HasColumnType("uuid");
-
                     b.Property<Vector>("Embedding")
                         .HasColumnType("vector(1536)")
                         .HasColumnName("embedding");
@@ -298,8 +295,6 @@ namespace Financial.Infrastructure.Data.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("DocumentId");
-
-                    b.HasIndex("DocumentId1");
 
                     b.ToTable("document_embeddings", (string)null);
                 });
@@ -460,6 +455,39 @@ namespace Financial.Infrastructure.Data.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("goals", (string)null);
+                });
+
+            modelBuilder.Entity("Financial.Domain.Entities.RefreshToken", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("RevokedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Token")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Token")
+                        .IsUnique();
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("refresh_tokens", (string)null);
                 });
 
             modelBuilder.Entity("Financial.Domain.Entities.SnapshotAccount", b =>
@@ -695,14 +723,10 @@ namespace Financial.Infrastructure.Data.Migrations
             modelBuilder.Entity("Financial.Domain.Entities.DocumentEmbedding", b =>
                 {
                     b.HasOne("Financial.Domain.Entities.Document", "Document")
-                        .WithMany()
+                        .WithMany("Embeddings")
                         .HasForeignKey("DocumentId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.HasOne("Financial.Domain.Entities.Document", null)
-                        .WithMany("Embeddings")
-                        .HasForeignKey("DocumentId1");
 
                     b.Navigation("Document");
                 });
@@ -722,6 +746,17 @@ namespace Financial.Infrastructure.Data.Migrations
                 {
                     b.HasOne("Financial.Domain.Entities.User", "User")
                         .WithMany("Goals")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Financial.Domain.Entities.RefreshToken", b =>
+                {
+                    b.HasOne("Financial.Domain.Entities.User", "User")
+                        .WithMany("RefreshTokens")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -811,6 +846,8 @@ namespace Financial.Infrastructure.Data.Migrations
                     b.Navigation("FinancialSnapshots");
 
                     b.Navigation("Goals");
+
+                    b.Navigation("RefreshTokens");
 
                     b.Navigation("Transactions");
                 });

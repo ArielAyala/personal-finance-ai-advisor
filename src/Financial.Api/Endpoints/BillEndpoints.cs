@@ -1,5 +1,7 @@
+using Financial.Api.Extensions;
 using Financial.Application.DTOs;
 using Financial.Application.Services;
+using System.Security.Claims;
 
 namespace Financial.Api.Endpoints;
 
@@ -8,49 +10,51 @@ public static class BillEndpoints
     public static void MapBillEndpoints(this IEndpointRouteBuilder app)
     {
         var group = app.MapGroup("/api/bills")
-            .WithTags("Bills");
+            .WithTags("Bills")
+            .RequireAuthorization();
 
-        // TODO: Add authentication once auth is implemented
-        // For now using hardcoded userId for development
-        var devUserId = Guid.Parse("00000000-0000-0000-0000-000000000001");
-
-        group.MapGet("/", async (BillService service) =>
+        group.MapGet("/", async (ClaimsPrincipal user, BillService service) =>
         {
-            var bills = await service.GetUserBillsAsync(devUserId);
+            var userId = user.GetUserId();
+            var bills = await service.GetUserBillsAsync(userId);
             return Results.Ok(bills);
         })
         .WithName("GetBills")
         .WithOpenApi();
 
-        group.MapGet("/active", async (BillService service) =>
+        group.MapGet("/active", async (ClaimsPrincipal user, BillService service) =>
         {
-            var bills = await service.GetActiveBillsAsync(devUserId);
+            var userId = user.GetUserId();
+            var bills = await service.GetActiveBillsAsync(userId);
             return Results.Ok(bills);
         })
         .WithName("GetActiveBills")
         .WithOpenApi();
 
-        group.MapGet("/overdue", async (BillService service) =>
+        group.MapGet("/overdue", async (ClaimsPrincipal user, BillService service) =>
         {
-            var bills = await service.GetOverdueBillsAsync(devUserId);
+            var userId = user.GetUserId();
+            var bills = await service.GetOverdueBillsAsync(userId);
             return Results.Ok(bills);
         })
         .WithName("GetOverdueBills")
         .WithOpenApi();
 
-        group.MapGet("/upcoming", async (DateTime? startDate, DateTime? endDate, BillService service) =>
+        group.MapGet("/upcoming", async (ClaimsPrincipal user, DateTime? startDate, DateTime? endDate, BillService service) =>
         {
+            var userId = user.GetUserId();
             var start = startDate ?? DateTime.UtcNow.Date;
             var end = endDate ?? start.AddMonths(1);
-            var bills = await service.GetUpcomingBillsAsync(devUserId, start, end);
+            var bills = await service.GetUpcomingBillsAsync(userId, start, end);
             return Results.Ok(bills);
         })
         .WithName("GetUpcomingBills")
         .WithOpenApi();
 
-        group.MapGet("/monthly-obligations/{year:int}/{month:int}", async (int year, int month, BillService service) =>
+        group.MapGet("/monthly-obligations/{year:int}/{month:int}", async (ClaimsPrincipal user, int year, int month, BillService service) =>
         {
-            var total = await service.GetMonthlyObligationsAsync(devUserId, year, month);
+            var userId = user.GetUserId();
+            var total = await service.GetMonthlyObligationsAsync(userId, year, month);
             return Results.Ok(new { Year = year, Month = month, TotalAmount = total });
         })
         .WithName("GetMonthlyObligations")
@@ -64,9 +68,10 @@ public static class BillEndpoints
         .WithName("GetBillById")
         .WithOpenApi();
 
-        group.MapPost("/", async (CreateBillDto dto, BillService service) =>
+        group.MapPost("/", async (ClaimsPrincipal user, CreateBillDto dto, BillService service) =>
         {
-            var bill = await service.CreateBillAsync(devUserId, dto);
+            var userId = user.GetUserId();
+            var bill = await service.CreateBillAsync(userId, dto);
             return Results.Created($"/api/bills/{bill.Id}", bill);
         })
         .WithName("CreateBill")
