@@ -1,15 +1,18 @@
+using Financial.Application.AI;
+using Financial.Application.Configuration;
 using Financial.Application.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Embeddings;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Embeddings;
 
-#pragma warning disable SKEXP0001
+#pragma warning disable SKEXP0001 // ITextEmbeddingGenerationService is experimental
 
 namespace Financial.Application.Services;
 
 /// <summary>
-/// Service for generating embeddings using OpenAI
+/// Service for generating text embeddings.
+/// The embedding provider is selected at runtime via the AI:Provider configuration key.
 /// </summary>
 public class EmbeddingService : IEmbeddingService
 {
@@ -22,13 +25,28 @@ public class EmbeddingService : IEmbeddingService
     {
         _logger = logger;
 
-        var apiKey = configuration["OpenAI:ApiKey"] ?? 
-                     throw new InvalidOperationException("OpenAI API key not configured");
+        var aiSettings = new AiSettings
+        {
+            Provider = configuration["AI:Provider"] ?? "OpenAI",
+            OpenAI = new OpenAiProviderSettings
+            {
+                ApiKey = configuration["AI:OpenAI:ApiKey"] ?? string.Empty,
+                ChatModelId = configuration["AI:OpenAI:ChatModelId"] ?? "gpt-4o-mini",
+                EmbeddingModelId = configuration["AI:OpenAI:EmbeddingModelId"] ?? "text-embedding-3-small"
+            },
+            AzureOpenAI = new AzureOpenAiProviderSettings
+            {
+                Endpoint = configuration["AI:AzureOpenAI:Endpoint"] ?? string.Empty,
+                ApiKey = configuration["AI:AzureOpenAI:ApiKey"] ?? string.Empty,
+                ChatDeploymentName = configuration["AI:AzureOpenAI:ChatDeploymentName"] ?? string.Empty,
+                EmbeddingDeploymentName = configuration["AI:AzureOpenAI:EmbeddingDeploymentName"] ?? string.Empty
+            }
+        };
 
-        var kernelBuilder = Kernel.CreateBuilder();
-        kernelBuilder.AddOpenAITextEmbeddingGeneration("text-embedding-3-small", apiKey);
+        var kernelBuilder = Kernel.CreateBuilder()
+            .AddEmbeddingProvider(aiSettings);
+
         var kernel = kernelBuilder.Build();
-
         _embeddingService = kernel.GetRequiredService<ITextEmbeddingGenerationService>();
     }
 

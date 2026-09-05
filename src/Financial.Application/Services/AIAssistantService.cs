@@ -1,23 +1,25 @@
+using Financial.Application.AI;
 using Financial.Application.AI.Plugins;
+using Financial.Application.Configuration;
 using Financial.Application.DTOs;
 using Financial.Application.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.OpenAI;
 
 namespace Financial.Application.Services;
 
 /// <summary>
-/// AI Assistant service implementation using Semantic Kernel
+/// AI Assistant service implementation using Semantic Kernel.
+/// The chat-completion provider is selected at runtime via the AI:Provider configuration
+/// key — no code changes required to switch between OpenAI and AzureOpenAI.
 /// </summary>
 public class AIAssistantService : IAIAssistantService
 {
     private readonly Kernel _kernel;
     private readonly IChatCompletionService _chatService;
     private readonly ILogger<AIAssistantService> _logger;
-    private readonly string _modelId;
 
     public AIAssistantService(
         IConfiguration configuration,
@@ -32,14 +34,27 @@ public class AIAssistantService : IAIAssistantService
     {
         _logger = logger;
 
-        // Get configuration
-        var apiKey = configuration["OpenAI:ApiKey"] ?? 
-                     throw new InvalidOperationException("OpenAI API key not configured");
-        _modelId = configuration["OpenAI:ModelId"] ?? "gpt-4o-mini";
+        var aiSettings = new AiSettings
+        {
+            Provider = configuration["AI:Provider"] ?? "OpenAI",
+            OpenAI = new OpenAiProviderSettings
+            {
+                ApiKey = configuration["AI:OpenAI:ApiKey"] ?? string.Empty,
+                ChatModelId = configuration["AI:OpenAI:ChatModelId"] ?? "gpt-4o-mini",
+                EmbeddingModelId = configuration["AI:OpenAI:EmbeddingModelId"] ?? "text-embedding-3-small"
+            },
+            AzureOpenAI = new AzureOpenAiProviderSettings
+            {
+                Endpoint = configuration["AI:AzureOpenAI:Endpoint"] ?? string.Empty,
+                ApiKey = configuration["AI:AzureOpenAI:ApiKey"] ?? string.Empty,
+                ChatDeploymentName = configuration["AI:AzureOpenAI:ChatDeploymentName"] ?? string.Empty,
+                EmbeddingDeploymentName = configuration["AI:AzureOpenAI:EmbeddingDeploymentName"] ?? string.Empty
+            }
+        };
 
-        // Build kernel with OpenAI
-        var kernelBuilder = Kernel.CreateBuilder();
-        kernelBuilder.AddOpenAIChatCompletion(_modelId, apiKey);
+        // Build kernel — provider selection is isolated in AIProviderKernelExtensions
+        var kernelBuilder = Kernel.CreateBuilder()
+            .AddChatCompletionProvider(aiSettings);
 
         // Register financial data plugin
         var financialPlugin = new FinancialDataPlugin(
@@ -148,12 +163,18 @@ Your goal is to be a trusted financial advisor that helps users make better fina
             // Add current user message with userId context
             chatHistory.AddUserMessage($"[User ID: {userId}]\n{request.Message}");
 
-            // Enable auto function calling
-            var executionSettings = new OpenAIPromptExecutionSettings
+            // Provider-agnostic execution settings.
+            // FunctionChoiceBehavior lives on the base class (SK Abstractions).
+            // Temperature / max_tokens are passed via ExtensionData; each connector's
+            // FromExecutionSettings() reads them from there automatically.
+            var executionSettings = new PromptExecutionSettings
             {
-                ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions,
-                Temperature = 0.7,
-                MaxTokens = 1000
+                FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(),
+                ExtensionData = new Dictionary<string, object>
+                {
+                    ["temperature"] = 0.7,
+                    ["max_tokens"] = 1000
+                }
             };
 
             // Get response
@@ -200,11 +221,14 @@ Always include the source of your data (which tables/tools you used).");
 
             chatHistory.AddUserMessage($"[User ID: {userId}]\n{query}");
 
-            var executionSettings = new OpenAIPromptExecutionSettings
+            var executionSettings = new PromptExecutionSettings
             {
-                ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions,
-                Temperature = 0.3, // Lower temperature for more factual responses
-                MaxTokens = 800
+                FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(),
+                ExtensionData = new Dictionary<string, object>
+                {
+                    ["temperature"] = 0.3, // Lower temperature for more factual responses
+                    ["max_tokens"] = 800
+                }
             };
 
             var response = await _chatService.GetChatMessageContentAsync(

@@ -47,6 +47,7 @@ Solution: `PersonalFinanceAIAdvisor.sln` (backend projects only). Frontend is se
   - **Phase 7**: RAG Integration (Document upload/processing, pgvector semantic search, AI document-aware chat)
   - **Phase 8**: AI Agent Advanced (Goals module, financial planning tools, recommendations engine, multi-step reasoning)
   - **Phase 9**: JWT Authentication (Register, Login, RefreshToken, password validation, token-based auth on all endpoints)
+  - **Phase 10**: Multi-provider AI (provider-agnostic Semantic Kernel wiring; switch OpenAI ↔ AzureOpenAI via `AI:Provider` config key, no code changes required)
 - Entity→DTO mapping: **Mapperly** (source generator) with mappers in `Financial.Application/Mappers/`
 - DTO→entity (Create/Update): **manual** in service layer (preserves business logic, validation, ownership checks)
 - **Validation**: **FluentValidation** for all DTOs with declarative validators in `Financial.Application/Validators/`
@@ -141,8 +142,11 @@ If only npm is available after a proper `package.json` exists: `npm install` / `
 - **Goals Module (Phase 8 ✅)**: Full CRUD for financial goals with progress tracking, auto-completion detection, multi-currency support, repository/service/endpoints/DTOs
 - **FluentValidation (Phase 9 ✅)**: Declarative validation layer with auto-validation pipeline. All DTOs validated before reaching service layer. Custom async validators for entity existence. Business logic validations remain in services.
 - **JWT Authentication (Phase 9 ✅)**: Token-based authentication with Register, Login, RefreshToken endpoints. BCrypt password hashing, refresh token rotation, all endpoints protected.
+- **Multi-provider AI (Phase 10 ✅)**: Provider-agnostic Semantic Kernel wiring. `AiSettings` + `AIProviderKernelExtensions` in Application layer select the connector at startup. Switch between providers by changing `AI:Provider` in config (user secrets / env). Supported today: `OpenAI` (default), `AzureOpenAI`. Plugins, services, and DTOs are untouched when switching.
+  - Config keys: `AI:Provider`, `AI:OpenAI:ApiKey`, `AI:OpenAI:ChatModelId`, `AI:OpenAI:EmbeddingModelId`, `AI:AzureOpenAI:Endpoint`, `AI:AzureOpenAI:ApiKey`, `AI:AzureOpenAI:ChatDeploymentName`, `AI:AzureOpenAI:EmbeddingDeploymentName`
+  - `PromptExecutionSettings` (base class) used with `FunctionChoiceBehavior.Auto()` and `ExtensionData` for temperature/max_tokens — no provider-specific imports in service layer.
 - Planned later (not in code): Advanced multi-agent orchestration, React Query / charts on frontend.
-- Evolution: monolith CRUD → AI tools → RAG/pgvector (✅ complete) → advanced agent with planning/recommendations (✅ complete) → declarative validation (✅ complete) → JWT auth (✅ complete). Build stage-appropriate.
+- Evolution: monolith CRUD → AI tools → RAG/pgvector (✅ complete) → advanced agent with planning/recommendations (✅ complete) → declarative validation (✅ complete) → JWT auth (✅ complete) → multi-provider AI (✅ complete). Build stage-appropriate.
 
 ## Conventions
 
