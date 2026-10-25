@@ -12,6 +12,8 @@ namespace Financial.Infrastructure.Data.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.Sql("CREATE EXTENSION IF NOT EXISTS vector;");
+
             migrationBuilder.CreateTable(
                 name: "exchange_rates",
                 columns: table => new

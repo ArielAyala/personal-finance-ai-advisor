@@ -1,4 +1,5 @@
 using Financial.Application.DTOs;
+using Financial.Application.Exceptions;
 using Financial.Application.Interfaces;
 
 namespace Financial.Api.Endpoints;
@@ -16,6 +17,10 @@ public static class AuthEndpoints
             {
                 var response = await authService.RegisterAsync(request);
                 return Results.Ok(response);
+            }
+            catch (RegistrationDisabledException ex)
+            {
+                return Results.Json(new { error = ex.Message }, statusCode: StatusCodes.Status403Forbidden);
             }
             catch (InvalidOperationException ex)
             {

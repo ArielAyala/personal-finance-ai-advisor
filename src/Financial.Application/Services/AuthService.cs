@@ -1,5 +1,6 @@
 using Financial.Application.Configuration;
 using Financial.Application.DTOs;
+using Financial.Application.Exceptions;
 using Financial.Application.Interfaces;
 using Financial.Application.Mappers;
 using Financial.Domain.Entities;
@@ -18,19 +19,27 @@ public class AuthService : IAuthService
     private readonly IUserRepository _userRepository;
     private readonly IRefreshTokenRepository _refreshTokenRepository;
     private readonly JwtSettings _jwtSettings;
+    private readonly AuthSettings _authSettings;
 
     public AuthService(
         IUserRepository userRepository,
         IRefreshTokenRepository refreshTokenRepository,
-        IOptions<JwtSettings> jwtSettings)
+        IOptions<JwtSettings> jwtSettings,
+        IOptions<AuthSettings> authSettings)
     {
         _userRepository = userRepository;
         _refreshTokenRepository = refreshTokenRepository;
         _jwtSettings = jwtSettings.Value;
+        _authSettings = authSettings.Value;
     }
 
     public async Task<AuthResponseDto> RegisterAsync(RegisterRequestDto request, CancellationToken cancellationToken = default)
     {
+        if (!_authSettings.AllowRegistration)
+        {
+            throw new RegistrationDisabledException();
+        }
+
         // Check if user already exists
         var existingUser = await _userRepository.GetByEmailAsync(request.Email, cancellationToken);
         if (existingUser != null)
