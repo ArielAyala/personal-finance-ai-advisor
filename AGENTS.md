@@ -58,7 +58,8 @@ Solution: `PersonalFinanceAIAdvisor.sln` (backend projects only). Frontend is se
   - Password strength validation: min 8 chars, uppercase, lowercase, digit
   - Business logic validations (ownership, authorization) remain in service layer
 - **Authentication**: **JWT Bearer** token-based authentication
-  - AuthService in Application layer with Register, Login, RefreshToken
+  - AuthService in Application layer with Register, Login, RefreshToken, RevokeToken
+  - Refresh token rotation; presenting an already-revoked refresh token revokes all of that user's refresh tokens (reuse detection)
   - BCrypt password hashing
   - Access tokens (60 min default) + Refresh tokens (7 days default)
   - RefreshToken entity for rotation and revocation
@@ -105,7 +106,8 @@ Verified from installed deps / source (root config files may be incomplete on di
 - ESLint + `eslint-config-next` 16.3
 - Package manager evidence: **pnpm** (`node_modules/.pnpm`)
 - Entry files: `src/app/layout.tsx`, `src/app/page.tsx`, `src/app/globals.css`
-- No API client, auth, or backend wiring yet; no React Query yet (planned in architecture doc)
+- Auth wired: `lib/api-client.ts` (axios) attaches the access token and, on 401, refreshes once via `/api/auth/refresh` (shared promise, retries the original request, redirects to `/login` on failure). Tokens live in `localStorage` (`lib/auth-tokens.ts`). Logout via `useLogout` (`hooks/use-auth.ts`) revokes the refresh token server-side.
+- No React Query wiring beyond the provider yet (planned in architecture doc)
 
 ### Frontend commands
 

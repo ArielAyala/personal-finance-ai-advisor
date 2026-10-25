@@ -14,6 +14,12 @@ export interface AuthResponse {
   user: User;
 }
 
+export interface RefreshTokenResponse {
+  accessToken: string;
+  refreshToken: string;
+  expiresAt: string;
+}
+
 export interface LoginInput {
   email: string;
   password: string;

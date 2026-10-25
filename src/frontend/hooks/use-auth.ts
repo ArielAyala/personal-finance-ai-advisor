@@ -29,3 +29,20 @@ export const useRegister = () => {
     },
   });
 };
+
+export const useLogout = () => {
+  const router = useRouter();
+
+  return async () => {
+    const refreshToken = authTokens.getRefreshToken();
+    try {
+      if (refreshToken) {
+        await authApi.revoke(refreshToken);
+      }
+    } finally {
+      authTokens.clear();
+      router.push('/login');
+    }
+  };
+};
+

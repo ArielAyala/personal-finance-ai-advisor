@@ -11,4 +11,8 @@ export const authApi = {
     const response = await apiClient.post<AuthResponse>('/auth/register', data);
     return response.data;
   },
+
+  revoke: async (refreshToken: string): Promise<void> => {
+    await apiClient.post('/auth/revoke', { refreshToken });
+  },
 };

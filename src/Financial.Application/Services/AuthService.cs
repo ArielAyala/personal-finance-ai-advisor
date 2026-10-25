@@ -106,7 +106,14 @@ public class AuthService : IAuthService
     {
         // Get refresh token from database
         var refreshToken = await _refreshTokenRepository.GetByTokenAsync(request.RefreshToken, cancellationToken);
-        
+
+        if (refreshToken != null && refreshToken.IsRevoked)
+        {
+            // A revoked token being presented again means it was likely stolen: invalidate every session of the user.
+            await _refreshTokenRepository.RevokeAllUserTokensAsync(refreshToken.UserId, cancellationToken);
+            throw new UnauthorizedAccessException("Refresh token reuse detected.");
+        }
+
         if (refreshToken == null || !refreshToken.IsActive)
         {
             throw new UnauthorizedAccessException("Invalid or expired refresh token.");
