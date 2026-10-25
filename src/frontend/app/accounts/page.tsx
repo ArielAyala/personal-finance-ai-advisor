@@ -1,10 +1,29 @@
 'use client';
 
 import Link from "next/link";
-import { useAccounts } from "@/hooks/use-accounts";
+import { useState } from "react";
+import { useAccounts, useDeleteAccount } from "@/hooks/use-accounts";
+import AccountForm from "@/components/accounts/account-form";
+import type { Account } from "@/types";
 
 export default function AccountsPage() {
   const { data: accounts, isLoading, error } = useAccounts();
+  const deleteAccount = useDeleteAccount();
+  const [showForm, setShowForm] = useState(false);
+  const [editing, setEditing] = useState<Account | null>(null);
+
+  const isFormOpen = showForm || editing !== null;
+
+  const closeForm = () => {
+    setShowForm(false);
+    setEditing(null);
+  };
+
+  const handleDelete = (account: Account) => {
+    if (window.confirm(`Delete account "${account.name}"?`)) {
+      deleteAccount.mutate(account.id);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
@@ -53,12 +72,25 @@ export default function AccountsPage() {
           <div className="mt-4 sm:mt-0">
             <button
               type="button"
-              className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
+              onClick={() => setShowForm(true)}
+              disabled={isFormOpen}
+              className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-zinc-900 hover:bg-zinc-800 disabled:opacity-50 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
             >
               Add Account
             </button>
           </div>
         </div>
+
+        {isFormOpen && (
+          <div className="mt-8">
+            <AccountForm
+              key={editing?.id ?? "new"}
+              account={editing ?? undefined}
+              onDone={closeForm}
+              onCancel={closeForm}
+            />
+          </div>
+        )}
 
         {/* Accounts List */}
         <div className="mt-8">
@@ -143,6 +175,24 @@ export default function AccountsPage() {
                       {account.institution}
                     </p>
                   )}
+                  <div className="mt-4 flex justify-end gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setEditing(account)}
+                      disabled={isFormOpen}
+                      className="text-sm font-medium text-zinc-700 hover:text-zinc-900 disabled:opacity-50 dark:text-zinc-300 dark:hover:text-zinc-50"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleDelete(account)}
+                      disabled={deleteAccount.isPending}
+                      className="text-sm font-medium text-red-600 hover:text-red-800 disabled:opacity-50 dark:text-red-400 dark:hover:text-red-300"
+                    >
+                      Delete
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
