@@ -95,6 +95,8 @@ dotnet run --project src/Financial.Api
 
 ## Frontend stack (`src/frontend`)
 
+- Frontend view status: see `src/frontend/VIEWS.md`. Update it when starting or finishing a view.
+
 Stock **create-next-app** template (App Router), still default marketing page — not product UI yet.
 
 Verified from installed deps / source (root config files may be incomplete on disk):
