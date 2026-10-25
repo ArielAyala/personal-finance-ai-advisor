@@ -7,7 +7,7 @@ public class Transaction
     public Guid AccountId { get; set; }
     public Guid? CategoryId { get; set; }
     public DateTime Date { get; set; }
-    public decimal Amount { get; set; } // Positive for income, negative for expense
+    public decimal Amount { get; set; } // Always positive; direction is given by Type
     public string Currency { get; set; } = "PYG";
     public string? Merchant { get; set; }
     public string? Description { get; set; }

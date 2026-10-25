@@ -112,7 +112,13 @@ export default function TransactionsPage() {
               Track your income, expenses and transfers
             </p>
           </div>
-          <div className="mt-4 sm:mt-0">
+          <div className="mt-4 sm:mt-0 flex gap-3">
+            <Link
+              href="/import"
+              className="inline-flex items-center px-4 py-2 border border-zinc-300 dark:border-zinc-700 rounded-md shadow-sm text-sm font-medium text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800"
+            >
+              Import
+            </Link>
             <button
               type="button"
               onClick={() => setShowForm(true)}

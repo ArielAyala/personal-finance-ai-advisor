@@ -33,9 +33,9 @@ public class CreateTransactionDtoValidator : AbstractValidator<CreateTransaction
             .WithMessage("Category does not exist.")
             .When(x => x.CategoryId.HasValue);
 
-        // Amount validation: must not be 0
+        // Amount validation: must be greater than zero (direction is given by Type)
         RuleFor(x => x.Amount)
-            .NotEqual(0).WithMessage("Amount must not be zero.");
+            .GreaterThan(0).WithMessage("Amount must be greater than zero.");
 
         // Currency validation: must be PYG or USD
         RuleFor(x => x.Currency)
@@ -45,10 +45,10 @@ public class CreateTransactionDtoValidator : AbstractValidator<CreateTransaction
         RuleFor(x => x.Date)
             .LessThanOrEqualTo(DateTime.UtcNow).WithMessage("Transaction date cannot be in the future.");
 
-        // Merchant validation: required if Amount < 0 (expense)
+        // Merchant validation: required for expenses
         RuleFor(x => x.Merchant)
             .NotEmpty().WithMessage("Merchant is required for expenses.")
-            .When(x => x.Amount < 0);
+            .When(x => x.Type == "Expense");
 
         // Merchant validation: max 200 characters
         RuleFor(x => x.Merchant)
@@ -92,9 +92,9 @@ public class UpdateTransactionDtoValidator : AbstractValidator<UpdateTransaction
             .WithMessage("Category does not exist.")
             .When(x => x.CategoryId.HasValue);
 
-        // Amount validation: if provided, must not be 0
+        // Amount validation: if provided, must be greater than zero
         RuleFor(x => x.Amount)
-            .NotEqual(0).WithMessage("Amount must not be zero.")
+            .GreaterThan(0).WithMessage("Amount must be greater than zero.")
             .When(x => x.Amount.HasValue);
 
         // Date validation: if provided, must not be in the future

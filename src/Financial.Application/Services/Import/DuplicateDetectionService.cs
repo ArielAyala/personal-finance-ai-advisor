@@ -26,9 +26,9 @@ public class DuplicateDetectionService : IDuplicateDetectionService
             // Criteria: same date, amount, and merchant within a reasonable timeframe
             var isDuplicate = existingTransactions.Any(existing =>
                 existing.Date.Date == transaction.Date.Date &&
-                existing.Amount == transaction.Amount &&
+                existing.Amount == Math.Abs(transaction.Amount) &&
                 (string.IsNullOrEmpty(transaction.Merchant) || 
-                 existing.Description?.Contains(transaction.Merchant, StringComparison.OrdinalIgnoreCase) == true)
+                 existing.Merchant?.Contains(transaction.Merchant, StringComparison.OrdinalIgnoreCase) == true)
             );
 
             transaction.IsDuplicate = isDuplicate;

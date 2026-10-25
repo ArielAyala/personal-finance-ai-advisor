@@ -53,15 +53,27 @@ public class ImportService : IImportService
 
         var preview = await parser.ParseFileAsync(fileStream, fileName, userId, cancellationToken);
 
-        // Detect duplicates
         if (preview.Transactions.Any())
         {
+            foreach (var transaction in preview.Transactions.Where(t => string.IsNullOrWhiteSpace(t.Account)))
+            {
+                transaction.IsValid = false;
+                transaction.ValidationMessages.Add("Missing account");
+            }
+
             preview.Transactions = await _duplicateDetection.DetectDuplicatesAsync(
                 preview.Transactions, 
                 userId, 
                 cancellationToken);
-            
+
+            var accounts = (await _accountRepository.GetByUserIdAsync(userId, cancellationToken)).ToList();
+            var categories = (await _categoryRepository.GetByUserIdAsync(userId, cancellationToken)).ToList();
+
+            preview.NewAccounts = BuildProposedAccounts(preview.Transactions, accounts);
+            preview.NewCategories = BuildProposedCategories(preview.Transactions, categories);
             preview.DuplicateRecords = preview.Transactions.Count(t => t.IsDuplicate);
+            preview.ValidRecords = preview.Transactions.Count(t => t.IsValid);
+            preview.InvalidRecords = preview.Transactions.Count(t => !t.IsValid);
         }
 
         return preview;
@@ -85,34 +97,119 @@ public class ImportService : IImportService
 
         try
         {
-            // Note: In a real implementation, we would retrieve the preview data from cache or temporary storage
-            // For now, we'll assume the preview data is passed in the request or needs to be re-parsed
-            
-            // Get user's accounts and categories
-            var accounts = await _accountRepository.GetByUserIdAsync(userId, cancellationToken);
-            var categories = await _categoryRepository.GetByUserIdAsync(userId, cancellationToken);
+            var rows = request.Transactions;
+            if (rows.Count == 0)
+            {
+                result.Errors.Add("No transactions to import");
+                return result;
+            }
 
-            // This is a placeholder - in production, retrieve the actual transactions from the preview
-            var transactionsToImport = new List<Transaction>();
+            if (request.SkipDuplicates)
+            {
+                await _duplicateDetection.DetectDuplicatesAsync(rows, userId, cancellationToken);
+            }
 
-            // Import each transaction
-            foreach (var transaction in transactionsToImport)
+            var accounts = (await _accountRepository.GetByUserIdAsync(userId, cancellationToken)).ToList();
+            var categories = (await _categoryRepository.GetByUserIdAsync(userId, cancellationToken)).ToList();
+
+            var proposedAccounts = BuildProposedAccounts(rows, accounts)
+                .ToDictionary(p => p.Name, StringComparer.OrdinalIgnoreCase);
+            var proposedCategories = BuildProposedCategories(rows, categories)
+                .ToDictionary(p => p.Name, StringComparer.OrdinalIgnoreCase);
+
+            var approvedAccounts = new HashSet<string>(request.ApprovedAccounts, StringComparer.OrdinalIgnoreCase);
+            var approvedCategories = new HashSet<string>(request.ApprovedCategories, StringComparer.OrdinalIgnoreCase);
+
+            var accountsByName = new Dictionary<string, Account>(StringComparer.OrdinalIgnoreCase);
+            foreach (var account in accounts)
+                accountsByName.TryAdd(account.Name, account);
+
+            var categoriesByName = new Dictionary<string, Category>(StringComparer.OrdinalIgnoreCase);
+            foreach (var category in categories)
+                categoriesByName.TryAdd(category.Name, category);
+
+            foreach (var row in rows)
             {
                 try
                 {
-                    if (transaction == null)
+                    if (!row.IsValid || string.IsNullOrWhiteSpace(row.Account))
+                    {
+                        result.SkippedRecords++;
+                        result.Errors.Add($"Row {row.RowNumber}: invalid record");
+                        continue;
+                    }
+
+                    if (request.SkipDuplicates && row.IsDuplicate)
                     {
                         result.SkippedRecords++;
                         continue;
                     }
 
-                    await _transactionRepository.CreateAsync(transaction, cancellationToken);
+                    var accountName = row.Account.Trim();
+                    if (!accountsByName.TryGetValue(accountName, out var account))
+                    {
+                        if (!approvedAccounts.Contains(accountName))
+                        {
+                            result.SkippedRecords++;
+                            result.Errors.Add($"Row {row.RowNumber}: account '{accountName}' does not exist and was not approved");
+                            continue;
+                        }
+
+                        var proposed = proposedAccounts[accountName];
+                        account = await _accountRepository.CreateAsync(new Account
+                        {
+                            Id = Guid.NewGuid(),
+                            UserId = userId,
+                            Name = accountName,
+                            Type = Enum.Parse<AccountType>(proposed.Type),
+                            Currency = proposed.Currency,
+                            IsActive = true,
+                            CreatedAt = DateTime.UtcNow
+                        }, cancellationToken);
+                        accountsByName[accountName] = account;
+                    }
+
+                    Category? category = null;
+                    var categoryName = row.Category?.Trim();
+                    if (!string.IsNullOrWhiteSpace(categoryName))
+                    {
+                        if (!categoriesByName.TryGetValue(categoryName, out category)
+                            && approvedCategories.Contains(categoryName))
+                        {
+                            var proposed = proposedCategories[categoryName];
+                            category = await _categoryRepository.CreateAsync(new Category
+                            {
+                                Id = Guid.NewGuid(),
+                                UserId = userId,
+                                Name = categoryName,
+                                Type = Enum.Parse<CategoryType>(proposed.Type),
+                                CreatedAt = DateTime.UtcNow
+                            }, cancellationToken);
+                            categoriesByName[categoryName] = category;
+                        }
+                    }
+
+                    await _transactionRepository.CreateAsync(new Transaction
+                    {
+                        Id = Guid.NewGuid(),
+                        UserId = userId,
+                        AccountId = account.Id,
+                        CategoryId = category?.Id,
+                        Date = row.Date,
+                        Amount = Math.Abs(row.Amount),
+                        Currency = row.Currency.Trim().ToUpperInvariant(),
+                        Merchant = row.Merchant,
+                        Notes = row.Notes,
+                        Type = row.Amount < 0 ? TransactionType.Expense : TransactionType.Income,
+                        CreatedAt = DateTime.UtcNow
+                    }, cancellationToken);
+
                     result.ImportedRecords++;
                 }
                 catch (Exception ex)
                 {
                     result.FailedRecords++;
-                    result.Errors.Add($"Failed to import transaction: {ex.Message}");
+                    result.Errors.Add($"Row {row.RowNumber}: {ex.Message}");
                 }
             }
 
@@ -139,7 +236,6 @@ public class ImportService : IImportService
 
         try
         {
-            // Basic validation - check if file can be opened and parsed
             fileStream.Seek(0, SeekOrigin.Begin);
             var preview = await parser.ParseFileAsync(fileStream, fileName, Guid.Empty, cancellationToken);
             return preview.Errors.Count == 0;
@@ -150,65 +246,44 @@ public class ImportService : IImportService
         }
     }
 
-    private async Task<Account?> FindOrCreateAccountAsync(
-        string? accountName, 
-        Guid userId, 
-        bool autoCreate,
-        CancellationToken cancellationToken)
+    private static List<ProposedAccountDto> BuildProposedAccounts(
+        IEnumerable<TransactionImportDto> rows,
+        IEnumerable<Account> existingAccounts)
     {
-        if (string.IsNullOrWhiteSpace(accountName))
-            return null;
+        var existingNames = existingAccounts.Select(a => a.Name).ToHashSet(StringComparer.OrdinalIgnoreCase);
 
-        var accounts = await _accountRepository.GetByUserIdAsync(userId, cancellationToken);
-        var account = accounts.FirstOrDefault(a => 
-            a.Name.Equals(accountName, StringComparison.OrdinalIgnoreCase));
-
-        if (account == null && autoCreate)
-        {
-            account = new Account
+        return rows
+            .Where(r => !string.IsNullOrWhiteSpace(r.Account) && !existingNames.Contains(r.Account.Trim()))
+            .GroupBy(r => r.Account!.Trim(), StringComparer.OrdinalIgnoreCase)
+            .Select(g =>
             {
-                Id = Guid.NewGuid(),
-                UserId = userId,
-                Name = accountName,
-                Type = AccountType.Other,
-                Currency = "PYG",
-                IsActive = true,
-                CreatedAt = DateTime.UtcNow
-            };
-            
-            account = await _accountRepository.CreateAsync(account, cancellationToken);
-        }
-
-        return account;
+                var currency = g.First().Currency.Trim().ToUpperInvariant();
+                return new ProposedAccountDto
+                {
+                    Name = g.Key,
+                    Currency = currency,
+                    Type = currency == "USD" ? nameof(AccountType.UsdAccount) : nameof(AccountType.Other),
+                    RowCount = g.Count()
+                };
+            })
+            .ToList();
     }
 
-    private async Task<Category?> FindOrCreateCategoryAsync(
-        string? categoryName, 
-        Guid userId, 
-        bool autoCreate,
-        CancellationToken cancellationToken)
+    private static List<ProposedCategoryDto> BuildProposedCategories(
+        IEnumerable<TransactionImportDto> rows,
+        IEnumerable<Category> existingCategories)
     {
-        if (string.IsNullOrWhiteSpace(categoryName))
-            return null;
+        var existingNames = existingCategories.Select(c => c.Name).ToHashSet(StringComparer.OrdinalIgnoreCase);
 
-        var categories = await _categoryRepository.GetByUserIdAsync(userId, cancellationToken);
-        var category = categories.FirstOrDefault(c => 
-            c.Name.Equals(categoryName, StringComparison.OrdinalIgnoreCase));
-
-        if (category == null && autoCreate)
-        {
-            category = new Category
+        return rows
+            .Where(r => !string.IsNullOrWhiteSpace(r.Category) && !existingNames.Contains(r.Category.Trim()))
+            .GroupBy(r => r.Category!.Trim(), StringComparer.OrdinalIgnoreCase)
+            .Select(g => new ProposedCategoryDto
             {
-                Id = Guid.NewGuid(),
-                UserId = userId,
-                Name = categoryName,
-                Type = CategoryType.Expense,
-                CreatedAt = DateTime.UtcNow
-            };
-            
-            category = await _categoryRepository.CreateAsync(category, cancellationToken);
-        }
-
-        return category;
+                Name = g.Key,
+                Type = g.All(r => r.Amount >= 0) ? nameof(CategoryType.Income) : nameof(CategoryType.Expense),
+                RowCount = g.Count()
+            })
+            .ToList();
     }
 }

@@ -14,7 +14,7 @@ Legend: ⬜ Pending · 🚧 In progress · ✅ Done
 | Categories | `/categories` | `/api/categories` | `services/categories.ts`, `hooks/use-categories.ts` | ⬜ Pending | Service ready |
 | Bills | `/bills` | `/api/bills/*` | — | ⬜ Pending | Includes payments and installments |
 | Goals | `/goals` | `/api/goals/*` | — | ⬜ Pending | Includes progress tracking |
-| Import | `/import` | `/api/import/*` | — | ⬜ Pending | Preview → validate → execute |
+| Import | `/import` | `/api/import/*` | `services/import.ts`, `hooks/use-import.ts` | ✅ Done | Preview, account/category approval, execute |
 | Snapshots | `/snapshots` | `/api/snapshots/*` | — | ⬜ Pending | Draft → Closed |
 | Analytics | `/analytics` | `/api/analytics/*` | — | ⬜ Pending | 7 endpoints; may be split into sub-views |
 | Exchange rates | `/exchange-rates` | `/api/exchange-rates/*` | — | ⬜ Pending | |

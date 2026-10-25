@@ -9,6 +9,8 @@ public class ImportPreviewDto
     public int InvalidRecords { get; set; }
     public int DuplicateRecords { get; set; }
     public List<TransactionImportDto> Transactions { get; set; } = new();
+    public List<ProposedAccountDto> NewAccounts { get; set; } = new();
+    public List<ProposedCategoryDto> NewCategories { get; set; } = new();
     public List<ImportValidationError> Errors { get; set; } = new();
 }
 
@@ -25,6 +27,21 @@ public class TransactionImportDto
     public bool IsValid { get; set; }
     public bool IsDuplicate { get; set; }
     public List<string> ValidationMessages { get; set; } = new();
+}
+
+public class ProposedAccountDto
+{
+    public string Name { get; set; } = string.Empty;
+    public string Currency { get; set; } = string.Empty;
+    public string Type { get; set; } = string.Empty;
+    public int RowCount { get; set; }
+}
+
+public class ProposedCategoryDto
+{
+    public string Name { get; set; } = string.Empty;
+    public string Type { get; set; } = string.Empty;
+    public int RowCount { get; set; }
 }
 
 public class ImportValidationError

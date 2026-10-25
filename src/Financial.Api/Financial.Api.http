@@ -90,8 +90,23 @@ Content-Type: application/json
 {
   "batchId": "00000000-0000-0000-0000-000000000001",
   "skipDuplicates": true,
-  "autoCreateCategories": true,
-  "autoCreateAccounts": false
+  "transactions": [
+    {
+      "rowNumber": 2,
+      "date": "2026-07-01T00:00:00",
+      "amount": -62000,
+      "currency": "PYG",
+      "merchant": "Github Copilot",
+      "category": "Professional Service",
+      "account": "Mastercard Credit Card Ueno",
+      "notes": null,
+      "isValid": true,
+      "isDuplicate": false,
+      "validationMessages": []
+    }
+  ],
+  "approvedAccounts": ["Mastercard Credit Card Ueno"],
+  "approvedCategories": ["Professional Service"]
 }
 
 ###

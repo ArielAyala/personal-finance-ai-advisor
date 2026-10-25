@@ -4,8 +4,9 @@ public class ImportRequestDto
 {
     public Guid BatchId { get; set; }
     public bool SkipDuplicates { get; set; } = true;
-    public bool AutoCreateCategories { get; set; } = true;
-    public bool AutoCreateAccounts { get; set; } = false;
+    public List<TransactionImportDto> Transactions { get; set; } = new();
+    public List<string> ApprovedAccounts { get; set; } = new();
+    public List<string> ApprovedCategories { get; set; } = new();
 }
 
 public class ImportResultDto

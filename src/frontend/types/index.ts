@@ -134,3 +134,67 @@ export interface TransactionFilter {
   pageNumber?: number;
   pageSize?: number;
 }
+
+export interface ImportRow {
+  rowNumber: number;
+  date: string;
+  amount: number;
+  currency: string;
+  merchant?: string | null;
+  category?: string | null;
+  account?: string | null;
+  notes?: string | null;
+  isValid: boolean;
+  isDuplicate: boolean;
+  validationMessages: string[];
+}
+
+export interface ProposedAccount {
+  name: string;
+  currency: string;
+  type: string;
+  rowCount: number;
+}
+
+export interface ProposedCategory {
+  name: string;
+  type: string;
+  rowCount: number;
+}
+
+export interface ImportValidationError {
+  rowNumber: number;
+  field: string;
+  message: string;
+}
+
+export interface ImportPreview {
+  batchId: string;
+  fileName: string;
+  totalRecords: number;
+  validRecords: number;
+  invalidRecords: number;
+  duplicateRecords: number;
+  transactions: ImportRow[];
+  newAccounts: ProposedAccount[];
+  newCategories: ProposedCategory[];
+  errors: ImportValidationError[];
+}
+
+export interface ExecuteImportInput {
+  batchId: string;
+  skipDuplicates: boolean;
+  transactions: ImportRow[];
+  approvedAccounts: string[];
+  approvedCategories: string[];
+}
+
+export interface ImportResult {
+  batchId: string;
+  success: boolean;
+  importedRecords: number;
+  skippedRecords: number;
+  failedRecords: number;
+  errors: string[];
+  completedAt: string;
+}
