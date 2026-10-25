@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { authTokens } from '@/lib/auth-tokens';
 
 const apiClient = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5213/api',
@@ -8,14 +9,12 @@ const apiClient = axios.create({
   withCredentials: true,
 });
 
-// Request interceptor for adding auth token (will be implemented later)
 apiClient.interceptors.request.use(
   (config) => {
-    // TODO: Add auth token when authentication is implemented
-    // const token = localStorage.getItem('token');
-    // if (token) {
-    //   config.headers.Authorization = `Bearer ${token}`;
-    // }
+    const token = authTokens.getAccessToken();
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
     return config;
   },
   (error) => {
@@ -23,11 +22,14 @@ apiClient.interceptors.request.use(
   }
 );
 
-// Response interceptor for error handling
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
-    // TODO: Handle errors globally (e.g., redirect to login on 401)
+    const isLoginPage = window.location.pathname === '/login';
+    if (error.response?.status === 401 && !isLoginPage) {
+      authTokens.clear();
+      window.location.href = '/login';
+    }
     return Promise.reject(error);
   }
 );
