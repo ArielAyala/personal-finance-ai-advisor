@@ -5,7 +5,10 @@ export const importApi = {
   preview: async (file: File): Promise<ImportPreview> => {
     const formData = new FormData();
     formData.append('file', file);
-    const response = await apiClient.post<ImportPreview>('/import/preview', formData);
+    // Drop the instance-level JSON content type so axios sends the FormData as multipart/form-data
+    const response = await apiClient.post<ImportPreview>('/import/preview', formData, {
+      headers: { 'Content-Type': undefined },
+    });
     return response.data;
   },
 
